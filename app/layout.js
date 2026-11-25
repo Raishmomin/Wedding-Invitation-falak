@@ -13,13 +13,13 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <link rel="preload" href={SEAL_IMAGE} as="image" type="image/webp" />
-        {["silk", "paper-gilt", "liner", "doily", "gypsophila"].map((n) => (
+        {["sunlit", "monogram", "env-back", "env-flap", "drape", "babysbreath", "olive"].map((n) => (
           <link key={n} rel="preload" href={`/emboss/${n}.webp`} as="image" type="image/webp" />
         ))}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;0,600;0,700;1,500&family=EB+Garamond:wght@500;600&family=Pinyon+Script&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Pinyon+Script&display=swap"
           rel="stylesheet"
         />
       </head>
