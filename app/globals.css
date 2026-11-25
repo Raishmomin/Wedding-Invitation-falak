@@ -1,240 +1,345 @@
-/* Layout idea: fine wedding stationery on ivory silk, finished in gold.
-   Welcome: an envelope addressed to the guest, its seal pressed with our monogram in gold. The seal lifts, the flap
-   opens on a lace lining, the card rises and flies, unchanged, into place as the invitation — which lies on lace, tied
-   with cotton twine. Below, four straight cards with gold-painted deckle edges.
-   Gold goes on the monogram, the seal, the card edges, ornaments, dividers and buttons — never on text or large areas.
-   Type: Pinyon Script for names and two headings; Cormorant Garamond for text 17px and up; EB Garamond for capitals. */
+/* Layout idea (after the approved design, from the reference video): an ivory flat-lay in morning sun — sage chiffon,
+   fresh baby's breath and olive. Welcome: a square ivory envelope tied with sheer chiffon and sealed in gold; the seal
+   cracks, the ribbon slips away, the flap turns up and a frosted acrylic card rises out. Below, the same frosted
+   glass on a sage ground for every card, each laid out its own way, with gold kept to fine lines, rings and the seal.
+   Cinzel capitals for names and headings, spaced Cormorant capitals, Pinyon Script for accents, Amiri for Arabic. */
 :root{
   color-scheme: light;
-  --envelope:#f5efe4;
-  --ink:#3a2f28;
-  --ink-2:#6b5d52;
-  --ink-3:#7d6f63;        /* the lightest text */
-  --rule:#ddd1bf;
-  --g900:#7a5a22; --g700:#8a6a2f; --g500:#b8944f; --g300:#dcc08a; --g100:#f4e6bf;
-  --foil:linear-gradient(115deg,#8a6a2f,#c7a35e 25%,#f4e6bf 40%,#b8944f 55%,#8a6a2f 75%,#d4b473);
+  --ink:#4a4037;          /* names, headings */
+  --ink-2:#574c42;        /* text */
+  --ink-3:#6f6358;        /* small capitals */
+  --ink-4:#685c51;        /* the softest capitals (still 4.5:1 on the glass) */
+  --gold:#b38f52;         /* rules, diamonds, rings */
+  --gold-dark:#7a5a22;    /* gold words: times, labels */
+  --line:#a8916a;         /* hairlines */
+  --gold-foil:linear-gradient(135deg,#c9a35e,#e6cd8f 45%,#a9843f);
+  --font-caps:"Cinzel",Georgia,serif;
+  --font-serif:"Cormorant Garamond",Georgia,"Times New Roman",serif;
   --font-script:"Pinyon Script","Snell Roundhand",cursive;
-  --font-serif:"Cormorant Garamond","Cormorant",Georgia,serif;
-  --font-caps:"EB Garamond","Cormorant Garamond",Georgia,serif;
-  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 .3  0 0 0 0 .24  0 0 0 0 .18  0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  --font-arabic:"Amiri","Noto Naskh Arabic",serif;
+  --sun:url(/emboss/sunlit.webp);
 }
 *{box-sizing:border-box;margin:0}
 html{scroll-behavior:smooth}
-body{
-  background:#ebe3d6;
-  color:var(--ink);
-  font-family:var(--font-serif);
-  font-weight:500;
-  font-size:1.1rem;
-  line-height:1.5;
-  font-variant-numeric:lining-nums;
-  min-height:100vh;
-  overflow-x:hidden;
-}
+body{background:#c3c7b0;color:var(--ink-2);font-family:var(--font-serif);font-weight:500;font-size:16px;line-height:1.5;font-variant-numeric:lining-nums;min-height:100vh;overflow-x:hidden}
 body.locked{overflow:hidden}
-.page{position:relative;overflow-x:clip}
-/* ivory silk (scripts/emboss.mjs) */
-#ground,#gate{background:url(/emboss/silk.webp) center/cover no-repeat,#ebe3d6}
-#ground{position:fixed;inset:0;z-index:0}
-#music{position:fixed;right:14px;bottom:14px;z-index:45;width:40px;height:40px;border-radius:50%;border:1px solid var(--g500);cursor:pointer;
-  background:#fbf8f2;box-shadow:0 4px 12px rgba(80,62,45,.16);display:flex;align-items:center;justify-content:center;gap:2.5px;animation:rise .8s ease backwards}
-#music i{width:1.5px;height:5px;background:var(--g500);border-radius:1px;transform-origin:50% 100%}
+.page{position:relative;overflow-x:hidden;overflow-x:clip}   /* hidden: for Safari before 16 */
+/* the sage ground of the cards: morning sun from the upper left over the leaf-shadowed ivory, tinted sage */
+#ground{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 90% 45% at 12% 0%,rgba(255,250,236,.6),rgba(255,250,236,0) 62%),
+  linear-gradient(180deg,rgba(150,160,124,.55),rgba(170,178,146,.42) 55%,rgba(185,190,162,.5)),var(--sun) center/cover no-repeat,#c3c7b0}
+a{color:inherit}
+:focus-visible{outline:1.5px solid var(--gold);outline-offset:4px}
+#music[hidden]{display:none}
+#music{position:fixed;right:10px;bottom:10px;z-index:70;width:40px;height:40px;border-radius:50%;border:1px solid var(--gold);cursor:pointer;
+  background:rgba(255,255,255,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 6px 16px rgba(60,58,40,.18);
+  display:flex;align-items:center;justify-content:center;gap:2.5px;animation:rise .8s ease backwards}
+#music i{width:1.5px;height:5px;background:var(--gold-dark);border-radius:1px;transform-origin:50% 100%}
 #music[aria-pressed="true"] i{height:15px;animation:eq 1s ease-in-out infinite}
 #music[aria-pressed="true"] i:nth-child(2){animation-delay:-.35s}#music[aria-pressed="true"] i:nth-child(3){animation-delay:-.7s}#music[aria-pressed="true"] i:nth-child(4){animation-delay:-.15s}
-a{color:inherit}
-:focus-visible{outline:1.5px solid var(--g500);outline-offset:4px}
 
 /* ---------- type ---------- */
-.script{font-family:var(--font-script);font-weight:400;color:var(--ink);line-height:1.2;word-spacing:.08em}
-.cap{font-family:var(--font-caps);font-weight:500;font-size:12px;letter-spacing:.16em;line-height:1.75;text-transform:uppercase;color:var(--ink-2);padding-left:.16em;text-wrap:balance;max-width:20rem}
-.cap.gold{color:var(--g700);font-weight:600;letter-spacing:.24em;padding-left:.24em}
-.text{font-style:italic;font-size:19px;line-height:1.5;color:var(--ink-2);max-width:30ch;text-wrap:pretty}
-.amp{font-family:var(--font-serif);font-style:italic;font-size:.5em;margin:0 .12em;color:var(--ink-2)}
-/* small functional headings: spaced capitals that close in as they arrive */
-h2.head{font-family:var(--font-caps);font-weight:500;font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink);padding-left:.3em;line-height:1.4;
+.script{font-family:var(--font-script);font-weight:400;line-height:1.2;word-spacing:.08em}
+.cap{font-weight:600;font-size:11.5px;letter-spacing:.16em;line-height:1.7;text-transform:uppercase;color:var(--ink-3);padding-left:.16em;text-wrap:balance}
+.cap.small{font-size:10.5px;letter-spacing:.12em;max-width:290px}
+.cap.strong{color:var(--ink);letter-spacing:.2em}
+.cap.soft{color:var(--ink-4);letter-spacing:.22em}
+.cap.gold{color:var(--gold-dark);letter-spacing:.26em;padding-left:.26em}
+.title{font-family:var(--font-caps);font-weight:400;font-size:19px;letter-spacing:.22em;padding-left:.22em;line-height:1.35;text-transform:uppercase;color:var(--ink);text-wrap:balance;
   transition:letter-spacing 1.4s cubic-bezier(.2,.7,.2,1), opacity 1s ease, transform 1s cubic-bezier(.2,.7,.2,1)}
-h2.head.pre{letter-spacing:.6em}
-/* the two script headings write themselves in, left to right */
-h2.title{font-size:40px;padding:0 .2em;margin-bottom:-4px;clip-path:inset(-30% -10% -30% -10%)}
-h2.title.reveal{transition:clip-path 2s cubic-bezier(.5,0,.2,1)}
-h2.title.reveal.pre{clip-path:inset(-30% 105% -30% -10%);opacity:1;transform:none}
-.sect{margin-top:36px}
-/* the ornament under each heading, in gold: rule, lozenge, rule */
-.orn{position:relative;display:block;width:96px;height:7px;margin:2px 0 6px;
-  background:linear-gradient(90deg,transparent,var(--g500)) left center/40px 1px no-repeat,linear-gradient(270deg,transparent,var(--g500)) right center/40px 1px no-repeat;
-  transition:background-size 1.2s ease .2s}
-.orn::after{content:"";position:absolute;left:50%;top:50%;width:5px;height:5px;background:var(--g500);transform:translate(-50%,-50%) rotate(45deg);transition:scale .6s cubic-bezier(.3,1.6,.5,1) .7s}
-.orn.reveal.pre{opacity:1;transform:none;background-size:0 1px,0 1px}
-.orn.reveal.pre::after{scale:0}
+.title.sub{font-size:16.5px}
+.title.pre{letter-spacing:.5em}
+.text{font-style:italic;font-size:16px;line-height:1.5;color:var(--ink-2);max-width:290px;text-wrap:pretty}
+.sign{font-family:var(--font-caps);font-size:14.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.sign .script{font-size:19px;letter-spacing:0;text-transform:none;color:var(--ink-3)}
+/* the "&" in a guest's name: the script font's own reads like a 4, so it is set in Cormorant italic */
+.amp{font-family:var(--font-serif);font-style:italic;font-size:.6em;margin:0 .12em;color:var(--ink-3)}
+.gap-s{margin-top:8px}.gap-l{margin-top:22px}
+/* the gold rule: a hairline either side of a diamond */
+.rule{position:relative;display:block;width:124px;height:7px;margin:4px 0 6px;
+  background:linear-gradient(90deg,rgba(168,145,106,0),var(--line)) left center/56px 1px no-repeat,linear-gradient(270deg,rgba(168,145,106,0),var(--line)) right center/56px 1px no-repeat}
+.rule::after{content:"";position:absolute;left:50%;top:50%;width:5px;height:5px;background:var(--gold);transform:translate(-50%,-50%) rotate(45deg)}
+.ico,.orn,.sec-head svg{color:var(--gold-dark)}
+.mono{display:block;flex:none;width:56px;height:56px;pointer-events:none;user-select:none}   /* the F R logo */
 
-/* ---------- the monogram (logo) ---------- */
-.mono{display:block;overflow:visible}
+/* flowers and chiffon round the edges, swaying a little */
+.deco{position:absolute;height:auto;pointer-events:none;user-select:none;animation:sway 8s ease-in-out infinite}
+.deco:nth-of-type(2n){animation-duration:9.5s;animation-delay:-3s}
+.l-drape,.v-drape,.d-drape,.c-drape{-webkit-mask-image:radial-gradient(closest-side,#000 45%,transparent 100%);mask-image:radial-gradient(closest-side,#000 45%,transparent 100%)}
 
-/* ---------- welcome: the envelope on silk ---------- */
-#gate{position:fixed;inset:0;z-index:50;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding-bottom:3vh}
-#gate.gone{opacity:0;transition:opacity .55s ease;pointer-events:none}
-.addr{display:flex;flex-direction:column;align-items:center;text-align:center;z-index:2;transition:opacity .4s ease, translate .6s ease;animation:rise 1s cubic-bezier(.2,.7,.2,1) backwards 1s}
-.addr .cap{letter-spacing:.28em;padding-left:.28em}
-.addr .script{font-size:40px;line-height:1.15;padding:0 .3em;overflow-wrap:anywhere;text-wrap:balance;animation:write 1.4s cubic-bezier(.5,0,.2,1) backwards 1.2s}
-#gate.open .addr{opacity:0;translate:0 -16px}
-.env{position:relative;width:min(92vw,372px);aspect-ratio:10/7;perspective:1100px;cursor:pointer;animation:envIn 1s cubic-bezier(.2,.7,.2,1) backwards .3s}
-.env::before{content:"";position:absolute;inset:0;border-radius:2px;box-shadow:0 1px 2px rgba(70,54,38,.22),0 6px 14px rgba(70,54,38,.12),0 30px 60px rgba(70,54,38,.2)}
-#gate.fly .env{transform:translateY(62vh);opacity:0;transition:transform .9s cubic-bezier(.5,0,.75,0), opacity .5s ease .3s}
-/* a sprig of baby's breath tucked behind the lower left corner */
-.env .tuck{position:absolute;width:118px;height:auto;left:-52px;bottom:-34px;rotate:-32deg;z-index:0;pointer-events:none}
-/* inside: an ivory lace lining, seen once the flap is up */
-.env-inner{position:absolute;inset:0;z-index:1;background:linear-gradient(rgba(70,55,40,.2),transparent 40%),url(/emboss/liner.webp) 0 0/96px 96px,#ece3d4}
-/* the card: tucked in and clipped at the envelope's bottom edge, free to rise above its top */
-.env-slot{position:absolute;left:0;right:0;top:-200%;bottom:0;z-index:2;overflow:hidden;pointer-events:none}
-.env-cardbox{position:absolute;left:7%;right:7%;top:68.7%;aspect-ratio:1/var(--ratio,1.9);container-type:inline-size;transition:top 1.1s cubic-bezier(.3,.7,.2,1) 1.15s}
-.env-cardbox .inv{height:100%}
-#gate.open .env-cardbox{top:38.7%}
-#gate.fly .env-cardbox{transform-origin:0 0;transition:transform .85s cubic-bezier(.55,0,.2,1);z-index:3}
-/* the back of the envelope: side flaps meeting a bottom flap */
-.env-pocket{position:absolute;inset:0;z-index:3;clip-path:polygon(0 0,50% 51%,100% 0,100% 100%,0 100%);background:var(--grain),linear-gradient(170deg,#f8f3ea,var(--envelope) 60%,#efe7da)}
-.env-pocket svg{position:absolute;inset:0;width:100%;height:100%}
-.env-pocket .bottom{fill:rgba(255,255,255,.35)}
-.env-pocket .fold{fill:none;stroke:rgba(150,128,105,.28);stroke-width:1;vector-effect:non-scaling-stroke}
-.env-pocket::after{content:"";position:absolute;inset:0;background:rgba(80,62,45,.14);clip-path:polygon(0 0,50% 65%,100% 0,100% 2.4%,50% 68%,0 2.4%);transition:opacity .3s ease .4s}
-#gate.open .env-pocket::after{opacity:0}
-/* the flap: a shade lighter than the pocket, its lining's gold edge just showing along the V; lace inside */
-.env-flap{position:absolute;left:0;top:0;width:100%;height:64%;z-index:5;transform-origin:50% 0;transform-style:preserve-3d}
-.env-flap .face,.env-flap .rim{position:absolute;inset:0;width:100%;height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden}
-.env-flap .rim path{fill:none;stroke:var(--g500);stroke-width:3.4;vector-effect:non-scaling-stroke;stroke-linejoin:round}
-.env-flap .front{clip-path:polygon(0 0,100% 0,53.5% 94%,50% 100%,46.5% 94%);background:var(--grain),linear-gradient(180deg,#fbf8f2,#f6f0e6)}
-.env-flap .back{transform:rotateX(180deg);clip-path:polygon(0 100%,100% 100%,53.5% 6%,50% 0,46.5% 6%);background:linear-gradient(0deg,rgba(255,255,255,.25),transparent),url(/emboss/liner.webp) 0 0/96px 96px,#ece3d4}
-#gate.open .env-flap{animation:flapOpen 1s cubic-bezier(.55,.05,.3,1) .5s forwards}
-/* the seal at the flap's point: our monogram pressed in, gold in the recess; a gold halo breathes round it */
-.seal-wrap{position:absolute;left:50%;top:64%;width:84px;height:84px;translate:-50% -50%;z-index:6;animation:sealIn 1s cubic-bezier(.3,1.5,.5,1) backwards .9s;transition:opacity .4s ease .25s, transform .45s ease .25s}
-.seal{position:relative;z-index:1;width:100%;height:100%;border:0;padding:0;background:none;cursor:pointer;border-radius:50%;transition:scale .25s ease}
-.seal img{width:100%;height:100%;display:block;filter:drop-shadow(0 3px 3px rgba(80,62,45,.3)) drop-shadow(0 1px 1px rgba(80,62,45,.3))}
-.seal::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 38%,rgba(255,247,226,.65) 50%,transparent 62%) 120% 0/300% 100%;
-  -webkit-mask:var(--seal) center/contain no-repeat;mask:var(--seal) center/contain no-repeat;animation:sheen 7s ease-in-out infinite 3s}
-.halo{position:absolute;inset:-2px;border-radius:50%;border:1px solid var(--g500);opacity:0;pointer-events:none;animation:halo 3.5s ease-out infinite 2.4s}
-#gate.open .seal{scale:.94}
-#gate.open .seal-wrap{opacity:0;transform:translateY(-16px) scale(1.12)}
-#gate.open .halo{animation:none}
-/* the call to action: gold capitals between gold hairlines */
-#gate .cta{display:inline-flex;align-items:center;gap:14px;border:0;background:none;cursor:pointer;z-index:2;padding:12px 6px;
-  font:600 12px/1 var(--font-caps);letter-spacing:.28em;text-transform:uppercase;color:var(--g700);animation:rise .9s ease backwards 2s;transition:opacity .35s}
-#gate .cta::before,#gate .cta::after{content:"";width:32px;height:1px;background:linear-gradient(90deg,transparent,var(--g500))}
-#gate .cta::after{background:linear-gradient(270deg,transparent,var(--g500))}
-#gate.open .cta{opacity:0}
+/* ---------- welcome: the envelope ---------- */
+#gate{position:fixed;inset:0;z-index:50;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(14px,3.2vh,30px);padding:2vh 0;
+  isolation:isolate}
+/* the cover's ivory ground, on its own layer so it can melt away and show the first page beneath */
+#gate::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--sun) center/cover no-repeat,#f3eee5;transition:opacity .6s ease .1s}
+/* the hand-over: the ground melts, the flowers fade, the envelope drops down the page growing as it falls,
+   while the first page's card grows out of the spot where the envelope's card stood (lib/invitation.js) */
+#gate.gone{pointer-events:none}
+#gate.gone::before{opacity:0}
+#gate.gone .deco{opacity:0;transition:opacity .45s ease}
+.g-drape1{width:300px;left:-36px;bottom:-40px;animation:none}
+.g-drape2{width:230px;right:-60px;top:-70px;rotate:180deg;animation:none}
+.g-bb1{width:150px;left:-46px;top:30px;rotate:150deg}
+.g-bb2{width:150px;left:-40px;bottom:-10px;rotate:28deg}
+.g-mono,.addr,#gate .cta{position:relative;z-index:2}   /* above the flowers */
+.g-mono{width:clamp(66px,12vh,96px);height:auto;aspect-ratio:1;width:clamp(66px,12svh,96px);animation:rise 1.1s cubic-bezier(.2,.7,.2,1) backwards .3s;transition:opacity .5s ease}
+.env{position:relative;flex:none;width:min(84vw,330px);width:min(84vw,330px,calc(48vh * 320 / 304));width:min(84vw,330px,calc(48svh * 320 / 304));aspect-ratio:320/304;perspective:1000px;cursor:pointer;animation:envIn 1.1s cubic-bezier(.2,.7,.2,1) backwards .5s;transition:transform .9s ease}
+#gate.gone .env{transform:translateY(100vh) scale(1.45);transition:transform 1.15s cubic-bezier(.5,0,.75,.35)}   /* lib/invitation.js DROP moves the pocket with it */
+#gate.gone .env-card,#gate.gone .env-flap{opacity:0;transition:opacity .28s ease}
+.env-back{position:absolute;inset:0;width:100%;height:100%;display:block;box-shadow:0 18px 34px rgba(70,58,44,.2),0 2px 5px rgba(70,58,44,.12);
+  clip-path:polygon(-10% -10%,0 -10%,50% -10%,100% -10%,110% -10%,110% 130%,-10% 130%)}
+/* at the hand-over the envelope's darker inside closes away behind the card, so only its light front pocket falls */
+#gate.gone .env-back{clip-path:polygon(-10% 0,0 0,50% 55%,100% 0,110% 0,110% 130%,-10% 130%);transition:clip-path .35s ease}
+.env-slot{position:absolute;inset:0;z-index:2;pointer-events:none;clip-path:polygon(0 -160%,100% -160%,100% 0,50% 55%,0 0)}
+/* a small copy of the first page's card (lib/markup.js CARD): laid out exactly as wide as that card, then scaled down
+   to the envelope (--hw, --s from lib/invitation.js), solid ivory as the first page's card is while it takes over */
+.env-card{position:absolute;left:9%;right:9%;top:5%;height:86%;transition:transform .75s cubic-bezier(.3,.7,.2,1) .85s}
+.card-inv.mini{position:absolute;left:0;top:0;width:var(--hw,100%);max-width:none;transform:scale(var(--s,.8));transform-origin:0 0;
+  -webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:0 22px 44px rgba(60,58,40,.18),inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 2000px rgba(251,249,244,.95)}
+#gate.open .env-card{transform:translateY(-46%)}
+.env-flap{position:absolute;left:0;top:0;width:100%;aspect-ratio:320/200;z-index:3;transform-origin:50% 0;transform-style:preserve-3d}
+.env-flap .face{position:absolute;inset:0;width:100%;height:100%;display:block;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.env-flap .back{transform:rotateX(180deg)}
+#gate.open .env-flap{animation:flapOpen 1s cubic-bezier(.55,.05,.3,1) .45s forwards}
+/* sheer chiffon round the envelope, its tails falling from the seal */
+.ribbon{position:absolute;inset:0;z-index:4;pointer-events:none;transition:opacity .7s ease .15s, transform .9s cubic-bezier(.5,0,.7,.4) .1s}
+.ribbon .band{position:absolute;left:-9%;right:-9%;top:51%;height:11%;transform:rotate(-2deg);
+  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,253,249,.55) 18%,rgba(255,255,255,.82) 42%,rgba(247,242,233,.6) 58%,rgba(255,253,249,.78) 76%,rgba(255,255,255,0));filter:drop-shadow(0 2px 3px rgba(90,75,55,.18))}
+.ribbon .tail{position:absolute;height:7%;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,253,249,.72) 30%,rgba(250,246,238,.55) 60%,rgba(255,255,255,0));filter:drop-shadow(0 2px 3px rgba(90,75,55,.14))}
+.ribbon .t1{left:21%;top:56%;width:37%;transform:rotate(24deg);transform-origin:100% 0}
+.ribbon .t2{left:28%;top:54%;width:31%;transform:rotate(-30deg);transform-origin:100% 100%}
+#gate.open .ribbon{opacity:0;transform:translateX(-34%) translateY(6%)}
+.env-olive{position:absolute;z-index:4;width:29%;height:auto;left:60%;top:29%;rotate:52deg;pointer-events:none;transition:opacity .5s ease, translate .8s ease}
+.env-bb{position:absolute;z-index:4;width:42%;height:auto;left:57%;top:37%;rotate:70deg;pointer-events:none;transition:opacity .5s ease .05s, translate .8s ease .05s}
+#gate.open .env-olive,#gate.open .env-bb{opacity:0;translate:30px -10px}
+/* the gold seal, in four pieces that hold together until it cracks */
+.seal{position:absolute;left:50%;top:57%;width:27%;aspect-ratio:1;translate:-50% -50%;z-index:5;border:0;padding:0;background:none;cursor:pointer;border-radius:50%;
+  animation:sealIn 1s cubic-bezier(.3,1.5,.5,1) backwards 1.1s}
+.seal .piece,.seal .gloss{position:absolute;inset:0;background:var(--seal) center/contain no-repeat;filter:drop-shadow(0 4px 4px rgba(80,60,30,.3))}
+.seal .p1{clip-path:polygon(0 0,56% 0,49% 43%,0 54%)}
+.seal .p2{clip-path:polygon(56% 0,100% 0,100% 49%,53% 47%,49% 43%)}
+.seal .p3{clip-path:polygon(0 54%,49% 43%,53% 47%,45% 100%,0 100%)}
+.seal .p4{clip-path:polygon(53% 47%,100% 49%,100% 100%,45% 100%)}
+.seal .gloss{filter:none;background:linear-gradient(115deg,transparent 38%,rgba(255,247,226,.6) 50%,transparent 62%) 120% 0/300% 100%;
+  -webkit-mask:var(--seal) center/contain no-repeat;mask:var(--seal) center/contain no-repeat;animation:sheen 6s ease-in-out infinite 2.4s}
+.seal .halo{position:absolute;inset:-3px;border-radius:50%;border:1px solid var(--gold);opacity:0;animation:halo 3.2s ease-out infinite 2.2s}
+#gate.open .seal .gloss,#gate.open .seal .halo{opacity:0;animation:none}
+#gate.open .seal .p1{animation:crack1 .95s cubic-bezier(.4,0,.6,1) forwards}
+#gate.open .seal .p2{animation:crack2 .95s cubic-bezier(.4,0,.6,1) forwards .04s}
+#gate.open .seal .p3{animation:crack3 .95s cubic-bezier(.4,0,.6,1) forwards .02s}
+#gate.open .seal .p4{animation:crack4 .95s cubic-bezier(.4,0,.6,1) forwards .06s}
+.addr{display:flex;flex-direction:column;align-items:center;text-align:center;animation:rise 1s cubic-bezier(.2,.7,.2,1) backwards 1.3s;transition:opacity .5s ease}
+.addr .cap{font-size:11px;letter-spacing:.26em}
+.addr .script{font-size:clamp(26px,7.8vw,33px);line-height:1.2;color:#4f453c;padding:0 .3em;overflow-wrap:anywhere;text-wrap:balance}
+/* the hint: a glass pill with a gold rim */
+#gate .cta{flex:none;display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 24px;border-radius:999px;border:1px solid var(--gold);cursor:pointer;
+  background:rgba(255,255,255,.62);box-shadow:0 8px 18px rgba(80,62,40,.12),inset 0 1px 0 rgba(255,255,255,.9);
+  font:600 11.5px/1 var(--font-serif);letter-spacing:.28em;text-transform:uppercase;color:var(--gold-dark);animation:rise .9s ease backwards 1.8s, breathe 2.8s ease-in-out infinite 3s;transition:opacity .4s}
+#gate .cta i{width:6px;height:6px;background:var(--gold);transform:rotate(45deg)}
+#gate.open .g-mono,#gate.open .addr{opacity:0}
+/* short screens (a small phone with its browser bars) */
+@media (max-height:700px){#gate{gap:12px}.addr .script{font-size:26px}}
+/* browsers without aspect-ratio (iOS 14): give the envelope and its flap their height outright */
+@supports not (aspect-ratio:1){.env{height:calc(min(84vw,330px) * .95)}.env-flap{height:62.5%}}
+#gate.open .cta{opacity:0;animation:none}
 
-/* ---------- the cards ---------- */
-main{position:relative;z-index:2;max-width:430px;margin:0 auto;padding:32px 16px 64px;display:flex;flex-direction:column;gap:40px}
-/* cotton paper with a gold-painted deckle edge (scripts/emboss.mjs): the sheet is the border image, its shadow baked in */
-.card{position:relative;z-index:1;border:20px solid transparent;border-image:url(/emboss/paper-gilt.webp) 80 fill round;padding:40px 18px;
-  display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px}
-.card::before{content:"";position:absolute;inset:-12px;background:var(--grain);opacity:.8;pointer-events:none}
-.card.reveal{transition:opacity 1s ease, transform 1.1s cubic-bezier(.2,.7,.2,1)}
-.card.reveal.pre{opacity:0;transform:translateY(32px)}
+/* ---------- frosted acrylic, as on every card ---------- */
+.glass{position:relative;width:100%;max-width:380px;border-radius:22px;padding:30px 22px 26px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;
+  background:linear-gradient(160deg,rgba(255,255,255,.68),rgba(255,255,255,.4) 55%,rgba(255,255,255,.52));-webkit-backdrop-filter:blur(8px) saturate(1.05);backdrop-filter:blur(8px) saturate(1.05);
+  border:1px solid rgba(255,255,255,.82);box-shadow:0 22px 44px rgba(60,58,40,.18),inset 0 1px 0 rgba(255,255,255,.95)}
+/* a fine gold rule inside the edge, and now and then a soft light crossing the glass */
+.glass::after{content:"";position:absolute;inset:9px;border:1px solid rgba(179,143,82,.45);border-radius:15px;pointer-events:none}
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,255,255,0) 40%,rgba(255,255,255,.38) 50%,rgba(255,255,255,0) 60%) 120% 0/300% 100% no-repeat;animation:sheen 10s ease-in-out infinite 1s}
+.glass.arch{border-radius:170px 170px 18px 18px}
+.glass.arch::after{inset:8px;border-radius:162px 162px 12px 12px}
 
-/* the invitation, and its twin in the envelope: every size in container units, so the one can land on the other */
-.suite{position:relative;container-type:inline-size}
-.inv{border-width:5.4cqw;padding:9cqw 4cqw 0;gap:2.4cqw}
-.inv .mono{width:24cqw;height:auto;margin-bottom:1cqw}
-.inv .cap{font-size:3.4cqw}
-.inv .names{display:flex;flex-direction:column;align-items:center;width:100%;margin-top:.6cqw}
-.inv .names .n{font-size:13.6cqw;line-height:1.08;padding:0 .12em;white-space:nowrap}
-.inv .names .and{font-family:var(--font-serif);font-style:italic;font-size:5.6cqw;line-height:1.3;color:var(--ink-2)}
-.doily{position:absolute;inset:-14px -12px -10px;border:30px solid transparent;border-image:url(/emboss/doily.webp) 162 round;rotate:-1.8deg;pointer-events:none;transition:opacity .9s ease .2s}
-.suite > .tuck{position:absolute;width:126px;height:auto;left:-58px;bottom:-34px;rotate:-24deg;z-index:0;pointer-events:none;transition:opacity .9s ease .5s;animation:sway 9s ease-in-out infinite}
-.hero{z-index:1;padding-bottom:0}
-body:not(.opened) .doily,body:not(.opened) .suite > .tuck{opacity:0}
-.blessing{margin-top:2.6cqw}
-.when{display:flex;flex-direction:column;align-items:center;margin-top:1cqw}
-.dmy{display:flex;align-items:center;gap:14px;margin:2px 0}
-.dmy b{font-weight:500;font-size:28px;letter-spacing:.12em;color:var(--ink);text-transform:uppercase;padding-left:.12em}
-.dmy i{width:1px;height:24px;background:var(--g500)}
-.hero .family{font-size:32px;margin:6px 0 -4px}
-/* cotton twine round the card, drawn across, then the seal is pressed onto it */
-.ribbon{position:relative;align-self:stretch;height:66px;margin:16px -9.4cqw 14px}
-.ribbon svg{position:absolute;left:0;top:13px;width:100%;height:40px;overflow:visible}
-.ribbon path{fill:none;stroke:#f3ede3;stroke-width:1.5;vector-effect:non-scaling-stroke;filter:drop-shadow(0 1.2px .8px rgba(90,70,50,.32))}
-.ribbon img{position:absolute;left:calc(50% - 33px);top:0;width:66px;height:66px;filter:drop-shadow(0 4px 4px rgba(80,62,45,.3))}
-body:not(.opened) .ribbon{opacity:0}
-body.opened .ribbon path{stroke-dasharray:1;animation:undraw 1.5s cubic-bezier(.5,0,.2,1) backwards .9s}
-body.opened .ribbon path:nth-child(2){animation-delay:1s}body.opened .ribbon path:nth-child(3){animation-delay:1.1s}body.opened .ribbon path:nth-child(4){animation-delay:1.2s}
-body.opened .ribbon img{animation:sealIn .9s cubic-bezier(.3,1.5,.5,1) backwards 1.8s}
+/* ---------- the sections ---------- */
+main{position:relative;z-index:2;max-width:440px;margin:0 auto}
+body.opened main{z-index:60}   /* in front of the cover as it drops away */
+.sec{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px;padding:44px 22px}
 
-/* the letter */
-.lead{max-width:17rem}
-.bigdate{display:flex;flex-direction:column;align-items:center;margin:4px 0 8px}
-.bigdate b{font-weight:300;font-size:60px;line-height:1;letter-spacing:.05em;color:var(--ink)}
-.bigdate .script{font-size:30px;line-height:1;color:var(--ink-3);margin:2px 0 4px}
-.guest{font-size:38px;line-height:1.15;overflow-wrap:anywhere;text-wrap:balance;padding:0 .2em;margin:-6px 0 2px}
+/* the invitation: the card that rose out of the envelope, in the middle of the first screen */
+.hero{min-height:100vh;min-height:100svh;padding:40px 24px;justify-content:center}
+.card-inv{padding:30px 20px 28px;gap:2px}
+.h-mono{margin-top:14px}
+.l-mono{width:50px;height:50px;margin-bottom:2px}
+.bismillah{font-family:var(--font-arabic);font-size:24px;line-height:1.5;color:var(--ink)}
+.card-inv .rule{margin:14px 0 16px}
+.label-wi{margin-top:16px}
+.names{display:flex;flex-direction:column;align-items:center;margin:2px 0 4px;font-family:var(--font-caps);font-weight:400;font-size:clamp(26px,8vw,31px);letter-spacing:.06em;line-height:1.2;text-transform:uppercase;color:var(--ink)}
+.names .and{display:flex;align-items:center;gap:12px;margin:2px 0}
+.names .and i{width:44px;height:1px;background:var(--line)}
+.names .and .script{font-size:24px;letter-spacing:0;text-transform:none;color:var(--ink-3)}
+.daterow{display:flex;align-items:center;gap:14px;margin:0 0 10px;font-family:var(--font-caps);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink)}
+.daterow > i{width:1px;height:46px;background:var(--line)}
+.daterow .dd{display:flex;flex-direction:column;align-items:center;line-height:1}
+.daterow .dd b{font-weight:400;font-size:34px;letter-spacing:0}
+.daterow .dd small{font-size:12px;letter-spacing:.2em;margin-top:4px}
+.h-bb1{width:190px;left:-40px;top:0;rotate:160deg}
+.h-olive{width:110px;right:-10px;top:50px;rotate:-150deg}
+.h-bb2{width:200px;right:-36px;top:46%;rotate:-24deg}
+.h-bb3{width:180px;left:-50px;top:54%;rotate:18deg}
+#hero{transform-origin:50% 0}
+body.opened #hero{animation:handOver 1.15s cubic-bezier(.3,.7,.2,1) backwards, glassIn 1.8s ease backwards}
+body.opened .hero .deco{animation:fadeIn 1.2s ease backwards .4s, sway 8s ease-in-out infinite 1.6s}
+
+/* we are delighted, and the day's timeline */
+.guest{font-size:clamp(28px,8.4vw,32px);line-height:1.25;color:var(--ink);padding:0 .2em;overflow-wrap:anywhere;text-wrap:balance}
 /* a guest name in another alphabet (e.g. Gujarati): the script font lacks it, so set it plainly, smaller */
-[data-guest].gu{font-family:var(--font-serif),"Noto Serif Gujarati",serif;font-weight:500;font-size:26px;line-height:1.5;padding-top:.15em}
-.from{font-size:36px;line-height:1.15;text-wrap:balance;padding:0 .15em}
-.from.reveal{transition:clip-path 2.2s cubic-bezier(.5,0,.2,1) .2s;clip-path:inset(-30% -10% -30% -10%)}
-.from.reveal.pre{clip-path:inset(-30% 105% -30% -10%);opacity:1;transform:none}
-.family{font-size:32px;line-height:1.2}
+[data-guest].gu{font-family:var(--font-serif),"Noto Serif Gujarati",serif;font-weight:500;font-size:24px;line-height:1.5}
+.side{display:flex;align-items:center;gap:10px;margin:18px 0 6px;font-family:var(--font-caps);font-size:12.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink)}
+.side::before,.side::after{content:"";width:34px;height:1px;background:linear-gradient(90deg,rgba(168,145,106,0),var(--line))}
+.side::after{background:linear-gradient(270deg,rgba(168,145,106,0),var(--line))}
+.timeline{position:relative;width:100%;max-width:300px;padding-top:100px;display:flex;flex-direction:column;align-items:center}
+.timeline.pre{opacity:1;transform:none}
+.timeline .line{position:absolute;left:50%;top:90px;bottom:12px;width:1px;translate:-.5px 0;background:linear-gradient(180deg,var(--gold),rgba(179,143,82,.35));transform-origin:50% 0;transition:transform 1.6s ease .3s}
+.timeline.pre .line{transform:scaleY(0)}
+.medal{position:absolute;left:50%;top:0;width:84px;height:84px;translate:-50% 0;border-radius:50%;background:rgba(255,255,255,.92);border:1px solid var(--gold);
+  box-shadow:0 0 0 4px rgba(255,255,255,.5),0 0 0 5px rgba(179,143,82,.35),0 8px 18px rgba(60,58,40,.14);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;
+  transition:scale .9s cubic-bezier(.3,1.5,.5,1), opacity .6s ease}
+.timeline.pre .medal{scale:.4;opacity:0}
+.medal .dm{font-family:var(--font-caps);font-size:17px;letter-spacing:.04em;color:var(--ink)}
+.medal .script{font-size:16px;color:var(--ink-3);margin:1px 0}
+.medal .yr{font-family:var(--font-caps);font-size:12px;letter-spacing:.16em;color:var(--ink)}
+.stop{position:relative;width:100%;height:74px}
+.stop .node{position:absolute;left:50%;top:26px;width:9px;height:9px;background:var(--gold);transform:translate(-50%,-50%) rotate(45deg);box-shadow:0 0 0 4px rgba(255,255,255,.65);
+  transition:scale .6s cubic-bezier(.3,1.6,.5,1);transition-delay:calc(var(--k) * .45s + .9s)}
+.stop .stub{position:absolute;top:26px;width:14px;height:1px;background:var(--line)}
+.stop.l .stub{right:calc(50% + 8px)}.stop.r .stub{left:calc(50% + 8px)}
+.stop .what{position:absolute;top:2px;width:calc(50% - 22px);transition:opacity .8s ease, translate .9s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--k) * .45s + 1s)}
+.stop.l .what{right:calc(50% + 22px);text-align:right}
+.stop.r .what{left:calc(50% + 22px);text-align:left}
+.timeline.pre .stop .node{scale:0}
+.timeline.pre .stop.l .what{opacity:0;translate:-18px 0}
+.timeline.pre .stop.r .what{opacity:0;translate:18px 0}
+.stop .t{font-family:var(--font-caps);font-size:18px;letter-spacing:.06em;color:var(--gold-dark)}
+.stop .ev{margin-top:2px;font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--ink)}
+.stop .pl{margin-top:2px;font-size:10.5px;font-weight:600;letter-spacing:.1em;line-height:1.5;overflow-wrap:break-word;text-transform:uppercase;color:var(--ink-3)}
+.timeline .end{width:14px;height:14px;margin-top:2px;fill:var(--gold);animation:beat 1.8s ease-in-out infinite}
+.with{margin-top:10px}
+.l-bb1{width:180px;right:-46px;top:-6px;rotate:-156deg}
+.l-olive{width:96px;left:-14px;top:40px;rotate:140deg}
+.l-bb2{width:190px;left:-54px;bottom:60px;rotate:24deg}
+.l-drape{width:270px;right:-70px;bottom:-70px;scale:-1 1;animation:none}
 
-/* calendar and countdown */
-.cal{width:100%;max-width:300px;display:grid;grid-template-columns:repeat(7,1fr);row-gap:2px;font-variant-numeric:lining-nums tabular-nums}
-.cal .dow{font-family:var(--font-caps);font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);padding-bottom:6px;border-bottom:1px solid var(--rule);margin-bottom:6px}
-.cal .d{position:relative;height:38px;display:grid;place-items:center;font-size:17px;color:var(--ink-2);transition:opacity .5s ease, transform .6s cubic-bezier(.3,1.5,.5,1);transition-delay:calc(var(--k) * 20ms + .2s)}
+/* locations */
+.sec-head{display:flex;flex-direction:column;align-items:center}
+.sec-head .title{margin-top:8px;font-size:21px;letter-spacing:.24em;text-shadow:0 1px 12px rgba(255,255,255,.7)}
+.venue{max-width:320px;padding:44px 20px 24px}
+.venue .art{color:#a9844a;margin-bottom:6px}
+.vname{margin:6px 0 2px;font-family:var(--font-caps);font-size:18px;letter-spacing:.06em;line-height:1.3;text-transform:uppercase;color:var(--ink)}
+.pill{display:inline-flex;align-items:center;gap:8px;margin-top:12px;height:40px;padding:0 20px;border-radius:999px;background:rgba(255,255,255,.72);border:1px solid var(--gold);text-decoration:none;
+  font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--gold-dark);box-shadow:0 6px 14px rgba(60,58,40,.12);transition:background .3s, translate .25s}
+.pill:hover{background:#fff;translate:0 -2px}
+.v-bb1{width:150px;left:-62px;top:-30px;rotate:160deg}
+.v-olive{width:96px;right:-12px;top:150px;rotate:-24deg}
+.v-bb2{width:170px;right:-50px;top:52%;rotate:-30deg}
+.v-drape{width:280px;left:-50px;bottom:-60px;animation:none}
+
+/* the date and the countdown */
+.cal{width:100%;max-width:300px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));margin-top:6px}
+.cal.pre{opacity:1;transform:none}
+.cal .dow{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);padding-bottom:6px;border-bottom:1px solid #b9a27a;margin-bottom:4px}
+.cal .d{position:relative;height:36px;display:grid;place-items:center;font-family:var(--font-caps);font-size:14px;color:var(--ink-2);transition:opacity .5s ease, transform .6s cubic-bezier(.3,1.5,.5,1);transition-delay:calc(var(--k) * 18ms + .2s)}
 .cal.pre .d{opacity:0;transform:scale(.5)}
-.cal .d.main::before,.cal .d.also::before{content:"";position:absolute;left:50%;top:50%;width:34px;height:34px;translate:-50% -50%;border-radius:50%;border:1px solid var(--g500)}
-.cal .d.main::before{box-shadow:0 0 0 3px #fbf8f2 inset,0 0 0 4px var(--g300) inset;animation:halo-in 3.5s ease-in-out infinite}
-.cal .d.main span{color:var(--ink);font-weight:700}
-.legend{display:flex;flex-direction:column;align-items:center;font-family:var(--font-caps);font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);margin-top:4px}
+.cal .d span{position:relative}
+.cal .d.main::before,.cal .d.also::before{content:"";position:absolute;left:50%;top:50%;width:33px;height:33px;translate:-50% -50%;border-radius:50%}
+.cal .d.main::before{background:var(--gold-foil);box-shadow:0 4px 10px rgba(120,90,30,.3);animation:pulse 2.6s ease-in-out infinite}
+.cal .d.main span{color:#fff}
+.cal .d.also::before{border:1px solid var(--gold)}
+.legend{display:flex;flex-direction:column;align-items:center;margin-top:10px;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)}
 .legend span{display:flex;align-items:center;gap:8px}
-.legend i{width:10px;height:10px;border-radius:50%;border:1px solid var(--g500)}
-.legend i.main{box-shadow:0 0 0 2px #fbf8f2 inset,0 0 0 5px var(--g300) inset}
-.count{display:flex;justify-content:center;align-items:center;gap:8px;font-variant-numeric:lining-nums tabular-nums;margin-top:2px}
-.count div{display:flex;flex-direction:column;align-items:center;min-width:58px}
-.count b{font-weight:300;font-size:44px;line-height:1.05;color:var(--ink)}
-.count b.tick{animation:tick .55s ease}
-.count i{width:1px;height:40px;background:linear-gradient(transparent,var(--g500),transparent);margin-top:-16px}
-.count span{font-family:var(--font-caps);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);margin-top:4px}
+.legend i{width:9px;height:9px;border-radius:50%;background:var(--gold)}
+.orn{margin:24px 0 4px}
+.dials{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%;margin-top:14px}
+.dials.pre{opacity:1;transform:none}
+.dial{position:relative;display:flex;flex-direction:column;align-items:center}
+.dial svg{width:62px;height:62px;overflow:visible}
+.dial .track{fill:rgba(255,255,255,.55);stroke:rgba(179,143,82,.28);stroke-width:2}
+.dial .arc{fill:none;stroke:var(--gold);stroke-width:2.2;stroke-linecap:round;stroke-dasharray:var(--fill,0) 100;transform:rotate(-90deg);transform-origin:31px 31px;transition:stroke-dasharray 1.4s cubic-bezier(.3,.7,.2,1)}
+.dials.pre .arc{stroke-dasharray:0 100}
+.dial b{position:absolute;top:0;left:0;right:0;height:62px;display:grid;place-items:center;font-family:var(--font-caps);font-weight:400;font-size:19px;color:var(--ink)}
+.dial b.tick{animation:tick .55s ease}
+.dial span{margin-top:6px;font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.d-drape{width:260px;right:-70px;top:-80px;rotate:180deg;animation:none}
+.d-bb1{width:170px;left:-48px;top:250px;rotate:32deg}
+.d-olive{width:100px;right:-14px;bottom:130px;rotate:-40deg}
+.d-bb2{width:190px;right:-46px;bottom:-10px;rotate:-20deg}
 
-/* the celebrations and where */
-.program{display:flex;flex-direction:column;align-items:center;gap:22px;width:100%}
-.ev{display:flex;flex-direction:column;align-items:center;gap:2px}
-.ev.reveal{transition-delay:calc(var(--k) * .2s + .1s)}
-.place,.vname{font-weight:600;font-size:20px;line-height:1.3;color:var(--ink);text-wrap:balance;max-width:19rem;margin-top:2px}
-.vname{font-size:22px}
-.venue{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%}
-.venue + .venue{margin-top:26px}
-.btn{display:inline-flex;align-items:center;height:40px;margin-top:10px;padding:0 24px 0 calc(24px + .24em);border:1px solid var(--g500);text-decoration:none;
-  font:600 12px/1 var(--font-caps);letter-spacing:.24em;text-transform:uppercase;color:var(--g700);transition:background .3s, color .3s}
-.btn:hover{background:var(--g100)}
-
-/* wishes and contact */
-.wish{display:flex;flex-direction:column;align-items:center;gap:2px}
-.wish + .wish{margin-top:14px}
-.contact{display:flex;align-items:baseline;gap:10px;width:100%;max-width:300px;padding:5px 0;text-decoration:none;text-align:left}
-.contact .cap{padding-left:0;max-width:none;white-space:nowrap}
-.contact .dots{flex:1;border-bottom:1px dotted var(--g300);translate:0 -5px}
-.contact b{font-weight:600;font-size:20px;letter-spacing:.05em;color:var(--ink);white-space:nowrap}
-.contact:hover b{color:var(--g700)}
-#contact .mono{width:56px;height:auto;margin-top:8px}
-
-.foot{height:32px}
+/* wishes, contact, and a last word */
+.last{padding-bottom:90px}
+.last .glass{padding-bottom:58px}
+.call{display:flex;align-items:center;gap:12px;width:100%;max-width:290px;height:54px;padding:0 16px 0 8px;margin-top:8px;border-radius:999px;background:rgba(255,255,255,.7);border:1px solid rgba(179,143,82,.7);
+  text-decoration:none;box-shadow:0 6px 14px rgba(60,58,40,.1);transition:background .3s, translate .25s}
+.call:hover{background:#fff;translate:0 -2px}
+.call .ring{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--gold-foil)}
+.call .who{flex:1;text-align:left;font-size:10.5px;font-weight:600;letter-spacing:.12em;white-space:nowrap;text-transform:uppercase;color:var(--ink-3)}
+.call .num{font-family:var(--font-caps);font-size:14px;letter-spacing:.04em;color:var(--ink);white-space:nowrap}
+.last .rule{margin-top:20px}
+.last .sign{margin-top:2px}
+.close-seal{width:80px;height:80px;margin-top:-58px;position:relative;z-index:3;filter:drop-shadow(0 5px 6px rgba(80,60,30,.32))}
+.close-seal.pre{opacity:0;transform:scale(1.4) rotate(-14deg)}
+.close-seal.reveal{transition:opacity .6s ease, transform .9s cubic-bezier(.3,1.5,.5,1)}
+.c-bb1{width:180px;right:-44px;top:-4px;rotate:-150deg}
+.c-olive{width:96px;left:-12px;top:70px;rotate:150deg}
+.c-drape{width:290px;left:-60px;bottom:-70px;animation:none}
+.c-bb2{width:170px;right:-40px;bottom:40px;rotate:-22deg}
 
 /* ---------- motion ---------- */
-body.opened .stage{animation:rise 1s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--i,0) * .16s + .15s)}
-.reveal{transition:opacity 1s ease, transform 1s cubic-bezier(.2,.7,.2,1)}
-.reveal.pre{opacity:0;transform:translateY(20px)}
-@keyframes envIn{from{opacity:0;transform:translateY(16px)}}
-@keyframes flapOpen{0%{transform:rotateX(0);z-index:5}50%{z-index:5}51%{z-index:1}100%{transform:rotateX(180deg);z-index:1}}
-@keyframes halo{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.45)}}
-@keyframes halo-in{0%,100%{border-color:var(--g500)}50%{border-color:var(--g300)}}
-@keyframes undraw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
-@keyframes sway{0%,100%{transform:rotate(-1.4deg)}50%{transform:rotate(1.4deg)}}
+.reveal{transition:opacity 1s ease, transform 1.1s cubic-bezier(.2,.7,.2,1)}
+.reveal.pre{opacity:0;transform:translateY(30px)}
+.glass.reveal.pre{transform:translateY(46px) scale(.97)}
+@keyframes envIn{from{opacity:0;transform:translateY(24px) scale(.97)}}
+@keyframes flapOpen{0%{transform:rotateX(0);z-index:3}49%{z-index:3}50%{z-index:1}100%{transform:rotateX(178deg);z-index:1}}   /* once up, behind the rising card */
+@keyframes crack1{0%{transform:none}14%{transform:translate(-1.5px,-1px) rotate(-2deg)}100%{transform:translate(-34px,46px) rotate(-38deg);opacity:0}}
+@keyframes crack2{0%{transform:none}14%{transform:translate(1.5px,-1px) rotate(2deg)}100%{transform:translate(38px,40px) rotate(32deg);opacity:0}}
+@keyframes crack3{0%{transform:none}14%{transform:translate(-1px,1.5px) rotate(-1deg)}100%{transform:translate(-24px,80px) rotate(-22deg);opacity:0}}
+@keyframes crack4{0%{transform:none}14%{transform:translate(1px,1.5px) rotate(1deg)}100%{transform:translate(28px,76px) rotate(28deg);opacity:0}}
+/* from the envelope card's place and size (set as --fx, --fy, --fs when the cover hands over) to its own */
+@keyframes handOver{0%{transform:translate(var(--fx,0px),var(--fy,40px)) scale(var(--fs,.9))}100%{transform:none}}
+/* solid ivory like the envelope's card (so nothing shows through while the envelope falls behind), then frosted glass */
+@keyframes glassIn{0%,62%{box-shadow:0 22px 44px rgba(60,58,40,.18),inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 2000px rgba(251,249,244,.95)}100%{box-shadow:0 22px 44px rgba(60,58,40,.18),inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 2000px rgba(251,249,244,0)}}
+@keyframes fadeIn{from{opacity:0}}
+@keyframes sway{0%,100%{transform:rotate(-1.6deg)}50%{transform:rotate(1.6deg)}}
+@keyframes halo{0%{opacity:.85;transform:scale(1)}100%{opacity:0;transform:scale(1.45)}}
+@keyframes breathe{0%,100%{box-shadow:0 8px 18px rgba(80,62,40,.12),inset 0 1px 0 rgba(255,255,255,.9),0 0 0 0 rgba(179,143,82,.35)}50%{box-shadow:0 8px 18px rgba(80,62,40,.12),inset 0 1px 0 rgba(255,255,255,.9),0 0 0 6px rgba(179,143,82,0)}}
+@keyframes pulse{0%,100%{scale:1}50%{scale:1.06}}
 @keyframes eq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
-@keyframes sealIn{from{opacity:0;transform:scale(1.15)}to{opacity:1;transform:none}}
-@keyframes sheen{0%,82%{background-position:120% 0}100%{background-position:-120% 0}}
-@keyframes write{from{clip-path:inset(-30% 105% -30% -10%)}to{clip-path:inset(-30% -10% -30% -10%)}}
-@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes sealIn{from{opacity:0;transform:scale(1.5) rotate(-14deg)}to{opacity:1;transform:none}}
+@keyframes sheen{0%,70%{background-position:120% 0}100%{background-position:-120% 0}}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.2)}30%{transform:scale(1)}45%{transform:scale(1.12)}60%{transform:scale(1)}}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 @keyframes tick{0%{transform:translateY(-.25em);opacity:.2}100%{transform:none;opacity:1}}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none !important;transition:none !important}
-  .reveal.pre,.card.reveal.pre,.cal.pre .d{opacity:1;transform:none}
-  h2.head.pre{letter-spacing:.3em}
-  h2.title.reveal.pre,.from.reveal.pre{clip-path:none}
-  .orn.reveal.pre{background-size:40px 1px,40px 1px}
-  .orn.reveal.pre::after{scale:1}
+  .reveal.pre,.glass.reveal.pre,.cal.pre .d,.close-seal.pre{opacity:1;transform:none}
+  .title.pre{letter-spacing:.22em}
+  .timeline.pre .line{transform:none}
+  .timeline.pre .medal,.timeline.pre .stop .node{scale:1;opacity:1}
+  .timeline.pre .stop .what{opacity:1;translate:0 0}
+  .dials.pre .arc{stroke-dasharray:var(--fill,0) 100}
 }
+
+/* ---------- the guest-link page (/admin) ---------- */
+.adm{min-height:100vh;min-height:100svh;display:flex;align-items:center;justify-content:center;padding:32px 18px}
+.adm-card{gap:6px;padding:30px 22px 28px}
+.adm-card .title{margin-top:8px}
+.adm-form{width:100%;display:flex;flex-direction:column;gap:6px;margin-top:16px;text-align:left}
+.adm-form label{padding-left:6px}
+.adm-input{width:100%;height:50px;padding:0 16px;border-radius:14px;border:1px solid rgba(179,143,82,.55);background:rgba(255,255,255,.8);
+  font:500 19px/1 var(--font-serif);color:var(--ink);outline:none;box-shadow:inset 0 1px 2px rgba(60,50,40,.08);transition:border-color .2s, box-shadow .2s}
+.adm-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(179,143,82,.2)}
+.adm-input::placeholder{color:#a3978c;font-style:italic}
+.adm-out{width:100%;margin-top:14px;padding:12px 14px 14px;border-radius:14px;background:rgba(255,255,255,.5);border:1px dashed rgba(179,143,82,.55)}
+.adm-link{margin-top:2px;font:500 16px/1.45 var(--font-serif);color:var(--ink-3);overflow-wrap:anywhere}
+.adm-link b{font-weight:600;color:var(--gold-dark)}
+.adm-hint{font-style:italic;color:#a3978c}
+.adm-gap{margin-top:10px}
+.adm-greet{font-size:27px;color:var(--ink);overflow-wrap:anywhere}
+.adm-btns{display:flex;gap:10px;width:100%;margin-top:18px}
+.adm-btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:999px;border:1px solid var(--gold);cursor:pointer;
+  background:rgba(255,255,255,.7);box-shadow:0 6px 14px rgba(80,62,40,.1),inset 0 1px 0 rgba(255,255,255,.9);
+  font:600 12px/1 var(--font-serif);letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dark);text-decoration:none;transition:transform .15s, opacity .2s}
+.adm-btn.gold{background:linear-gradient(135deg,#c29d5c,#94702f);border-color:#8a672a;color:#fff;text-shadow:0 1px 1px rgba(70,48,12,.4)}
+.adm-btn:active{transform:scale(.97)}
+.adm-btn[aria-disabled="true"],.adm-btn:disabled{opacity:.45;pointer-events:none}

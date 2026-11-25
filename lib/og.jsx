@@ -1,100 +1,94 @@
+/* eslint-disable @next/next/no-img-element -- next/og draws with plain <img>; next/image does not apply here */
 import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { CONFIG } from "./config";
 
-/* Share-preview card and icons, drawn with the invitation's own fonts and colours (see globals.css):
-   a paper card on ivory satin, the monogram, the names in script, the cream sprig seal on cotton twine,
-   a ceramic dish of gold rings and dried baby's breath beside it. */
-const C = { paper: "#faf7f1", ink: "#564b43", ink2: "#7a6e64", line: "#cfc3b3", sprig: "#a69a8b", twine: "#efe7da" };
+/* Share-preview card and icons, in the invitation's own look (see globals.css): a frosted card on sage, baby's breath
+   and olive at its corners, the names in Roman capitals, the gold seal. next/og cannot set Arabic,
+   so the card keeps to the English lines. */
+const C = { ink: "#4a4037", ink3: "#6f6358", gold: "#b38f52", goldDark: "#7a5a22", line: "#a8916a" };
 
 const assets = join(process.cwd(), "assets");
-const [light, medium, italic, script, sealPng, dishPng, gypPng] = await Promise.all([
-  readFile(join(assets, "fonts/CormorantGaramond-300.ttf")),
+const [cinzel, cormorant, script, seal, bb, olive] = await Promise.all([
+  readFile(join(assets, "fonts/Cinzel-400.ttf")),
   readFile(join(assets, "fonts/CormorantGaramond-500.ttf")),
-  readFile(join(assets, "fonts/CormorantGaramond-Italic.ttf")),
   readFile(join(assets, "fonts/PinyonScript-Regular.ttf")),
-  readFile(join(assets, "seal.png")),          // written by npm run emboss
-  readFile(join(assets, "dish.png")),
-  readFile(join(assets, "gypsophila.png")),
+  readFile(join(assets, "seal-gold.png")),     // these three are written by npm run emboss
+  readFile(join(assets, "babysbreath.png")),
+  readFile(join(assets, "olive.png")),
 ]);
 const FONTS = [
-  { name: "Cormorant", data: light, weight: 300, style: "normal" },
-  { name: "Cormorant", data: medium, weight: 500, style: "normal" },
-  { name: "Cormorant", data: italic, weight: 400, style: "italic" },
+  { name: "Cinzel", data: cinzel, weight: 400, style: "normal" },
+  { name: "Cormorant", data: cormorant, weight: 500, style: "normal" },
   { name: "Script", data: script, weight: 400, style: "normal" },
 ];
 const png = (b) => `data:image/png;base64,${b.toString("base64")}`;
-const SEAL = png(sealPng), DISH = png(dishPng), GYP = png(gypPng);
-const [A, B] = CONFIG.initials;
+const SEAL = png(seal), BB = png(bb), OLIVE = png(olive);
 
-/* ---------- the monogram: F | R ---------- */
-function Monogram({ size, color = C.ink }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", fontFamily: "Cormorant", fontWeight: 300, fontSize: size, color, lineHeight: 1 }}>
-      <span>{A}</span>
-      <div style={{ width: Math.max(1, size / 50), height: size * 0.95, backgroundColor: C.line, margin: `0 ${size * 0.2}px` }} />
-      <span>{B}</span>
-    </div>
-  );
-}
-
-/* ---------- icons ---------- */
+/* ---------- icons: the gold seal ---------- */
 export function iconImage({ width, height }, { square = false } = {}) {
+  const size = square ? width * 0.84 : width;
   return new ImageResponse(
-    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-      backgroundColor: C.paper, borderRadius: square ? 0 : width * 0.18, border: square ? "none" : `${Math.max(1, width / 64)}px solid ${C.line}` }}>
-      <Monogram size={width * 0.46} />
+    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: square ? "#f3eee5" : "transparent" }}>
+      <img src={SEAL} width={size} height={size} alt="" />
     </div>,
-    { width, height, fonts: FONTS },
+    { width, height },
   );
 }
 
 /* ---------- the share card (1200×630) ---------- */
-const sc = (fontSize, color = C.ink2) => ({ fontFamily: "Cormorant", fontWeight: 500, fontSize, letterSpacing: fontSize * 0.22, color, textTransform: "uppercase" });
-// script words set apart by hand: the script font's own space is too narrow; "and" in Cormorant italic
-const Script = ({ text, size, color = C.ink, style }) => (
-  <div style={{ display: "flex", alignItems: "center", fontFamily: "Script", fontSize: size, color, lineHeight: 1.3, ...style }}>
-    {text.split(" ").map((w, i) => w === "&"
-      ? <span key={i} style={{ fontFamily: "Cormorant", fontStyle: "italic", fontSize: size * 0.4, color: C.ink2, margin: `0 ${size * 0.16}px` }}>and</span>
-      : <span key={i} style={{ margin: `0 ${size * 0.09}px` }}>{w}</span>)}
+const cap = (fontSize, color = C.ink3) => ({ fontFamily: "Cormorant", fontSize, letterSpacing: fontSize * 0.2, color, textTransform: "uppercase" });
+const rule = (w) => (
+  <div style={{ display: "flex", alignItems: "center" }}>
+    <div style={{ width: w, height: 1, backgroundColor: C.line }} />
+    <div style={{ width: 8, height: 8, backgroundColor: C.gold, transform: "rotate(45deg)", margin: "0 10px" }} />
+    <div style={{ width: w, height: 1, backgroundColor: C.line }} />
   </div>
 );
 // Names outside the script font's alphabet (e.g. written in Gujarati) would print as empty boxes — show the general card then.
 const printable = (name) => /^[\p{Script=Latin}\p{M}\p{N} .&'’]+$/u.test(name);
 const W = new Date(CONFIG.weddingAt);
-const part = (o) => new Intl.DateTimeFormat("en-GB", { ...o, timeZone: "Asia/Kolkata" }).format(W);
-const bar = <div style={{ width: 1, height: 26, backgroundColor: C.line, margin: "0 20px" }} />;
+const part = (o) => new Intl.DateTimeFormat("en-GB", { ...o, timeZone: "Asia/Kolkata" }).format(W).toUpperCase();
+const vbar = <div style={{ width: 1, height: 54, backgroundColor: C.line, margin: "0 22px" }} />;
 
 function Card({ guest }) {
   const forGuest = guest && printable(guest);
-  const guestSize = Math.min(54, Math.floor(640 / (guest.length * 0.42)));   // shrink long names to one line
+  const guestSize = Math.min(48, Math.floor(620 / (guest.length * 0.42)));   // shrink long names to one line
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#e9e2d6",
-      backgroundImage: "linear-gradient(118deg, #e6ded1 0%, #f3eee6 22%, #e7dfd2 44%, #f1ebe2 66%, #e2d9cb 100%)" }}>
-      <img src={GYP} width={190} height={247} alt="" style={{ position: "absolute", left: -20, bottom: -40, transform: "rotate(18deg)" }} />
-      <img src={DISH} width={250} height={250} alt="" style={{ position: "absolute", right: -60, top: -60 }} />
-      <div style={{ position: "relative", width: 760, height: 560, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        backgroundColor: C.paper, boxShadow: "0 14px 34px rgba(80,62,45,.25), 0 2px 5px rgba(80,62,45,.15)", transform: "rotate(-1deg)" }}>
-        <Monogram size={46} />
+    // a soft sage ground (the sunlit photo-like one would make the PNG too heavy for WhatsApp's preview)
+    <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#c3c7b0",
+      backgroundImage: "radial-gradient(ellipse at 15% 0%, #e4e3d2 0%, #c9ccb6 45%, #b4b99f 100%)" }}>
+      <img src={BB} width={300} height={390} alt="" style={{ position: "absolute", left: -40, top: -60, transform: "rotate(150deg)" }} />
+      <img src={BB} width={280} height={364} alt="" style={{ position: "absolute", right: -30, bottom: -90, transform: "rotate(-20deg)" }} />
+      <img src={OLIVE} width={150} height={275} alt="" style={{ position: "absolute", right: 120, top: -40, transform: "rotate(-150deg)" }} />
+      <img src={OLIVE} width={130} height={238} alt="" style={{ position: "absolute", left: 150, bottom: -70, transform: "rotate(24deg)" }} />
+
+      <div style={{ position: "relative", width: 780, height: 560, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        borderRadius: 28, backgroundColor: "rgba(255,255,255,.72)", border: "1px solid rgba(255,255,255,.9)", boxShadow: "0 24px 50px rgba(60,58,40,.22)" }}>
+        <div style={{ position: "absolute", top: 12, left: 12, right: 12, bottom: 12, borderRadius: 20, border: `1px solid rgba(179,143,82,.5)` }} />
         {forGuest ? [
-          <div key="l" style={{ ...sc(16), marginTop: 18 }}>An invitation for</div>,
-          <Script key="g" text={guest} size={guestSize} />,
-          <Script key="n" text={`${CONFIG.bride} & ${CONFIG.groom}`} size={50} style={{ marginTop: -2 }} />,
-        ] : [
-          <div key="l" style={{ ...sc(16), marginTop: 18 }}>Wedding Invitation</div>,
-          <Script key="n" text={`${CONFIG.bride} & ${CONFIG.groom}`} size={60} style={{ marginTop: 4 }} />,
-        ]}
-        <div style={{ ...sc(14), marginTop: 10 }}>{part({ weekday: "long" })}</div>
-        <div style={{ display: "flex", alignItems: "center", fontFamily: "Cormorant", fontWeight: 500, fontSize: 30, letterSpacing: 4, color: C.ink, marginTop: 2 }}>
-          <span>{part({ day: "numeric" })}</span>{bar}<span>{part({ month: "short" }).toUpperCase()}</span>{bar}<span>{part({ year: "numeric" })}</span>
+          <div key="l" style={cap(17)}>An invitation for</div>,
+          <div key="g" style={{ fontFamily: "Script", fontSize: guestSize, color: C.ink, lineHeight: 1.3 }}>{guest}</div>,
+        ] : (
+          <div style={cap(18)}>Wedding Invitation</div>
+        )}
+        <div style={{ fontFamily: "Cinzel", fontSize: forGuest ? 46 : 54, letterSpacing: 3, color: C.ink, marginTop: forGuest ? 6 : 10 }}>{CONFIG.bride.toUpperCase()}</div>
+        <div style={{ display: "flex", alignItems: "center", margin: "0 0 2px" }}>
+          <div style={{ width: 70, height: 1, backgroundColor: C.line }} />
+          <div style={{ fontFamily: "Script", fontSize: 36, color: "#6a5e52", margin: "0 18px" }}>and</div>
+          <div style={{ width: 70, height: 1, backgroundColor: C.line }} />
         </div>
-        <div style={{ ...sc(13), marginTop: 10 }}>Salabatpura · Surat</div>
-        {/* cotton twine across the card, a cream seal on it */}
-        <div style={{ position: "absolute", left: 0, right: 0, bottom: 52, height: 2, backgroundColor: C.twine, boxShadow: "0 1px 1px rgba(90,70,50,.3)" }} />
-        <div style={{ position: "absolute", left: 0, right: 0, bottom: 46, height: 2, backgroundColor: C.twine, boxShadow: "0 1px 1px rgba(90,70,50,.3)" }} />
-        <img src={SEAL} width={78} height={78} alt="" style={{ position: "absolute", bottom: 10 }} />
+        <div style={{ fontFamily: "Cinzel", fontSize: forGuest ? 46 : 54, letterSpacing: 3, color: C.ink }}>{CONFIG.groom.toUpperCase()}</div>
+        <div style={{ display: "flex", margin: "16px 0 14px" }}>{rule(80)}</div>
+        <div style={{ display: "flex", alignItems: "center", fontFamily: "Cinzel", fontSize: 20, letterSpacing: 4, color: C.ink }}>
+          <span>{part({ weekday: "long" })}</span>{vbar}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}><span style={{ fontSize: 46, letterSpacing: 0, lineHeight: 1 }}>{part({ day: "numeric" })}</span><span style={{ fontSize: 18 }}>{part({ year: "numeric" })}</span></div>
+          {vbar}<span>{part({ month: "long" })}</span>
+        </div>
+        <div style={{ ...cap(15), marginTop: 12 }}>Salabatpura · Surat</div>
       </div>
+      <img src={SEAL} width={104} height={104} alt="" style={{ position: "absolute", left: 548, bottom: 6 }} />
     </div>
   );
 }

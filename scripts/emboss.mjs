@@ -1,13 +1,16 @@
-/* Makes the stationery, lit once here because lighting is too slow for phones:
+/* Makes the invitation's artwork, lit once here because lighting is too slow for phones:
 
-     public/emboss/paper.webp        a sheet of deckle-edged cotton paper, for every card (9-slice, CSS border-image)
-     public/emboss/doily.webp        floral lace with a scalloped picot edge, under the first card (9-slice)
-     public/emboss/liner.webp        floral embroidery on tulle, lining the envelope (seamless tile)
-     public/emboss/flap-sprig.webp   a sprig blind-embossed into the envelope
-     public/emboss/seal.webp         the cream wax seal with a pressed sprig
-     public/emboss/gypsophila.webp   a stem of dried baby's breath
-     public/emboss/dish.webp         a scalloped ceramic dish with two gold rings
-     assets/seal.png, assets/dish.png, assets/gypsophila.png, app/favicon.ico   copies for the share card and the icons
+     public/emboss/sunlit.webp        an ivory surface in morning sun, leaf shadows falling across it (the page behind everything)
+     public/emboss/drape.webp         sage chiffon gathered in a corner, its edge melting away
+     public/emboss/env-back.webp      a square ivory envelope from the back: side and bottom flaps, the open top showing the inside
+     public/emboss/env-flap.webp      its top flap, with the shadow it lays on the rest (it turns up when the envelope opens)
+     public/emboss/env-flap-in.webp   the flap's inside, seen once it has turned
+     public/emboss/seal-gold.webp     the gold wax seal with F & R standing up from it
+     public/emboss/monogram.webp      F & R in gold foil inside a laurel wreath (the logo)
+     public/emboss/babysbreath.webp   a stem of fresh baby's breath
+     public/emboss/olive.webp         an olive sprig
+     assets/seal-gold.png, assets/babysbreath.png, assets/olive.png, app/favicon.ico
+                                      copies for the share card and the icons (next/og reads PNG)
 
    Run it again after changing anything here or the initials in lib/config.js:   npm run emboss
    To redraw only some pieces, name them:   npm run emboss -- seal   (every picture whose name contains "seal")
@@ -21,16 +24,13 @@ import { join } from "node:path";
 import { CONFIG } from "../lib/config.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-// let the SVG renderer find the invitation's Cormorant for the favicon
+// let the SVG renderer find the invitation's Cinzel for the initials
 const fontsConf = join(tmpdir(), "shaadi-mubarak-fonts.conf");
 writeFileSync(fontsConf, `<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "fonts.dtd"><fontconfig><include ignore_missing="yes">/etc/fonts/fonts.conf</include><dir>${join(root, "assets/fonts")}</dir></fontconfig>`);
 process.env.FONTCONFIG_FILE = fontsConf;
 const { default: sharp } = await import("sharp");
-
 function rng(seed){ return () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 const f = n => n.toFixed(2);
-const PAPER = "#faf7f1";
-const SOFTEN = `<filter id="soften" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="34"/></filter>`;   // melts the silk's folds together   // the cards: keep equal to --paper in globals.css
 
 /* ---------- small botanicals (heights) ---------- */
 /* A leaf lying along +x from its stalk: a low dome with a pressed midrib and side veins. `sway` bends its tip. */
@@ -53,17 +53,7 @@ function tear(cx, cy, a, r0, r1, w){
   const m = r0 + (r1 - r0) * .62;
   return `M${at(r0, 0)}C${at(m - (r1 - r0) * .3, w)} ${at(m, w)} ${at(r1, 0)}C${at(m, -w)} ${at(m - (r1 - r0) * .3, -w)} ${at(r0, 0)}Z`;
 }
-/* an embroidered flower: n raised petals with a stitched vein, a domed heart */
-function flower(cx, cy, R, n = 5, rot = -90){
-  let s = "";
-  for(let i = 0; i < n; i++){
-    const a = rot + i * 360 / n;
-    s += `<path d="${tear(cx, cy, a, R * .2, R, R * .38)}" fill="#c9c9c9" stroke="#8a8a8a" stroke-width="${f(R * .05 + .2)}"/>
-      <path d="${tear(cx, cy, a, R * .35, R * .8, R * .07)}" fill="#a8a8a8"/>`;
-  }
-  return s + `<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(R * .24)}" fill="url(#dome)"/>`;
-}
-/* a fine sprig: a curved stem from (x0, y0) to (x1, y1) with leaves in pairs, smaller toward the tip */
+/* a sprig: a curved stem from (x0, y0) to (x1, y1) with leaves in pairs, smaller toward the tip */
 function sprig(r, x0, y0, x1, y1, L, n = 6){
   const mx = (x0 + x1) / 2 + (y1 - y0) * .12, my = (y0 + y1) / 2 - (x1 - x0) * .12;
   let s = `<path d="M${f(x0)} ${f(y0)}Q${f(mx)} ${f(my)} ${f(x1)} ${f(y1)}" fill="none" stroke="#9c9c9c" stroke-width="${f(L * .09)}" stroke-linecap="round"/>`;
@@ -73,168 +63,129 @@ function sprig(r, x0, y0, x1, y1, L, n = 6){
     const dir = Math.atan2(2 * u * (my - y0) + 2 * t * (y1 - my), 2 * u * (mx - x0) + 2 * t * (x1 - mx)) * 57.296, l = L * (1 - t * .45);
     s += leaf(r, x, y, dir - 38, l, -.06) + leaf(r, x, y, dir + 38, l, .06);
   }
-  const [dx, dy] = [x1 - mx, y1 - my];
-  return s + leaf(r, x1, y1, Math.atan2(dy, dx) * 57.296, L * .62);
+  return s + leaf(r, x1, y1, Math.atan2(y1 - my, x1 - mx) * 57.296, L * .62);
 }
-
-/* ---------- cotton paper with a deckled edge (PS×PS, a 9-slice with corners PB deep) ----------
-   The torn edge wanders by a sum of waves that all repeat every PM, so the repeated middle of each side joins seamlessly. */
-const PS = 440, PB = 40, PM = PS - 2 * PB, PEDGE = 15;
-function deckle(){
-  const r = rng(11);
-  const waves = [2, 3, 4, 5, 7, 9, 11, 13, 17, 21, 27, 33, 41, 53, 67, 83].map(k => [k, 1.1 / Math.pow(k, .85), r() * 6.283]);   // gentle waves, a whisper of fibre
-  const j = (t, off) => waves.reduce((s, [k, a, ph]) => s + a * Math.sin(2 * Math.PI * k * t / PM + ph + off), 0);
-  const lo = PEDGE, hi = PS - PEDGE;
-  let d = "";
-  for(let x = lo; x <= hi; x += .5) d += (x === lo ? "M" : "L") + f(x) + " " + f(lo + j(x, 0));
-  for(let y = lo; y <= hi; y += .5) d += "L" + f(hi + j(y, 1.7)) + " " + f(y);
-  for(let x = hi; x >= lo; x -= .5) d += "L" + f(x) + " " + f(hi + j(x, 3.1));
-  for(let y = hi; y >= lo; y -= .5) d += "L" + f(lo + j(y, 4.4)) + " " + f(y);
-  return `${d}Z`;
-}
-
-/* ---------- the share card's paper: full-bleed ivory with a gold-painted deckle frame inset from its edge (1200×630) ---------- */
-function ogFrame(){
-  const r = rng(5), W = 1200, H = 630, m = 34;
-  const waves = [3, 5, 7, 11, 17, 23, 31, 47, 61].map(k => [k, 1.6 / Math.pow(k, .8), r() * 6.283]);
-  const j = (t, L, off) => waves.reduce((s, [k, a, ph]) => s + a * Math.sin(2 * Math.PI * k * t / L + ph + off), 0);
-  let d = "";
-  for(let x = m; x <= W - m; x += 1) d += (x === m ? "M" : "L") + f(x) + " " + f(m + j(x, W, 0));
-  for(let y = m; y <= H - m; y += 1) d += "L" + f(W - m + j(y, H, 1.3)) + " " + f(y);
-  for(let x = W - m; x >= m; x -= 1) d += "L" + f(x) + " " + f(H - m + j(x, W, 2.6));
-  for(let y = H - m; y >= m; y -= 1) d += "L" + f(m + j(y, H, 3.9)) + " " + f(y);
-  return { paper: `<rect width="${W}" height="${H}" fill="${PAPER}"/>`, rim: `<path d="${d}Z" fill="none" stroke="#d0d0d0" stroke-width="2.6"/>` };
-}
-
-/* ---------- ivory silk (SW×SH): broad soft folds running corner to corner — wide shadows, narrower bright satin
-   highlights along each ridge — painted straight in colour (lighting a height map this smooth bands in 8-bit) ---------- */
-const SW = 600, SH = 1100;
-function silk(){
-  const r = rng(61);
-  let shade = "", shine = "";
-  const fold = (x0, k) => `M${f(x0)} -80C${f(x0 + 150 + k[0] * 120)} ${f(240 + k[1] * 160)} ${f(x0 + 110 + k[2] * 170)} ${f(620 + k[3] * 180)} ${f(x0 + 430 + k[4] * 120)} ${SH + 80}`;
-  for(let i = 0; i < 9; i++){
-    const x0 = -380 + i * 105 + r() * 50, k = [r(), r(), r(), r(), r()];
-    shade += `<path d="${fold(x0, k)}" fill="none" stroke="#cdbfac" stroke-opacity="${f(.35 + r() * .35)}" stroke-width="${f(60 + r() * 90)}"/>`;
-    shine += `<path d="${fold(x0 + 38 + r() * 20, k)}" fill="none" stroke="#fffdf8" stroke-opacity="${f(.55 + r() * .4)}" stroke-width="${f(14 + r() * 26)}"/>`;
-  }
-  return `<defs><filter id="sb" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="38"/></filter>
-      <filter id="hb" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="11"/></filter>
-      <radialGradient id="glow" cx=".2" cy=".08" r=".9"><stop offset="0" stop-color="#fffaf1" stop-opacity=".85"/><stop offset="1" stop-color="#fffaf1" stop-opacity="0"/></radialGradient>
-      <linearGradient id="dim" x1="0" y1="0" x2="1" y2="1"><stop offset=".55" stop-color="#8a7558" stop-opacity="0"/><stop offset="1" stop-color="#8a7558" stop-opacity=".16"/></linearGradient></defs>
-    <rect x="-40" y="-40" width="${SW + 80}" height="${SH + 80}" fill="#ebe3d6"/>
-    <g filter="url(#sb)">${shade}</g><g filter="url(#hb)">${shine}</g>
-    <rect width="${SW}" height="${SH}" fill="url(#glow)"/><rect width="${SW}" height="${SH}" fill="url(#dim)"/>`;
-}
-
-/* ---------- floral lace along an edge (band coordinates: u along it, a scallop every DP; v inward from the tips) ---------- */
-const DP = 36, DS = 5 * DP, DB = 54;
-function laceBand(id, u0, u1){
-  let outline = `M${u0} 46L${u0} 17`, cord = "", threads = "", net = "";
-  for(let uc = Math.floor((u0 - DP / 2) / DP) * DP + DP / 2; uc <= u1 + DP; uc += DP){
-    outline += `L${f(uc - 15)} 17A15 15 0 0 1 ${f(uc + 15)} 17Q${f(uc + 18)} 22 ${f(uc + 21)} 17`;
-    cord += `M${f(uc - 15)} 17A15 15 0 0 1 ${f(uc + 15)} 17Q${f(uc + 18)} 22 ${f(uc + 21)} 17`;
-    for(let a = 195; a <= 345; a += 15){ const t = a * Math.PI / 180; threads += `<circle cx="${f(uc + 16.8 * Math.cos(t))}" cy="${f(17 + 16.8 * Math.sin(t))}" r="1.25" fill="none" stroke="#bdbdbd" stroke-width=".7"/>`; }
-    threads += flower(uc, 19, 7.6) + `<path d="${tear(uc + 18, 24, -62, 1, 6.2, 1.8)}${tear(uc + 18, 24, -118, 1, 6.2, 1.8)}" fill="#bfbfbf" stroke="#8a8a8a" stroke-width=".3"/>`;
-    threads += `<path d="${tear(uc + 9, 31 + 2.6 * Math.sin(2 * Math.PI * 9 / DP), -70, 0, 5.6, 1.9)}${tear(uc + 27, 31 + 2.6 * Math.sin(2 * Math.PI * 27 / DP), 70, 0, 5.6, 1.9)}" fill="#c4c4c4" stroke="#8a8a8a" stroke-width=".3"/>
-      <circle cx="${f(uc)}" cy="31" r="1.3" fill="url(#dome)"/>`;
-  }
-  let vine = "";
-  for(let u = u0; u <= u1; u += 1) vine += (u === u0 ? "M" : "L") + f(u) + " " + f(31 + 2.6 * Math.sin(2 * Math.PI * (u - DP / 2) / DP));
-  for(let n = Math.floor(u0 / 6) - 10; n <= u1 / 6 + 10; n++) net += `M${6 * n} 0L${6 * n + 50} 50M${6 * n} 0L${6 * n - 50} 50`;
-  return `<clipPath id="${id}" clipPathUnits="userSpaceOnUse"><path d="${outline}L${u1} 17L${u1} 46Z"/></clipPath>
-    <path d="${net}" clip-path="url(#${id})" stroke="#8a8a8a" stroke-width=".38" fill="none" opacity=".6"/>
-    <path d="${cord}" fill="none" stroke="#c8c8c8" stroke-width="1.6"/><path d="${vine}" fill="none" stroke="#bdbdbd" stroke-width="1.1"/>
-    <path d="M${u0} 41H${u1}" stroke="#cfcfcf" stroke-width="1.8"/><path d="M${u0} 44.5H${u1}" stroke="#bcbcbc" stroke-width=".9"/>${threads}`;
-}
-function doily(){
-  // each edge mitred at 45° where it meets the next, so the bands join at the corners instead of crossing
-  const miter = `<clipPath id="miter" clipPathUnits="userSpaceOnUse"><path d="M-30 -30H${DS + 30}L${DS - 52} 52H52Z"/></clipPath>`;
-  const bands = ["1 0 0 1 0 0", "0 1 1 0 0 0", `1 0 0 -1 0 ${DS}`, `0 1 -1 0 ${DS} 0`]
-    .map((m, i) => `<g transform="matrix(${m})"><g clip-path="url(#miter)">${laceBand(`lb${i}`, -DP, DS + DP)}</g></g>`).join("");
-  // a rosette over each corner, where two edges cross
-  const rosettes = [[24, 24], [DS - 24, 24], [24, DS - 24], [DS - 24, DS - 24]].map(([x, y]) => flower(x, y, 12, 8, -67.5) + flower(x, y, 6.5, 5)).join("");
-  return miter + bands + rosettes;
-}
-
-/* ---------- the envelope's liner: flowers, leaves and dots embroidered on tulle (LT×LT, seamless) ---------- */
-const LT = 96;
-function liner(withNet = true){
-  const r = rng(23);
-  let net = "", s = "";
-  for(let n = -40; n <= 70; n++) net += `M${4 * n} -40L${4 * n + 180} 140M${4 * n} -40L${4 * n - 180} 140`;
-  const motifs = [[22, 24, 8], [68, 60, 9], [40, 82, 5], [86, 16, 5.5], [10, 66, 4.5]];
-  let one = "";
-  motifs.forEach(([x, y, R], i) => {
-    one += flower(x, y, R, i % 2 ? 6 : 5, r() * 60);
-    for(let k = 0; k < 3; k++){ const a = r() * 360; one += `<path d="${tear(x, y, a, R * 1.1, R * 1.9, R * .3)}" fill="#c2c2c2" stroke="#8a8a8a" stroke-width=".3"/>`; }
-    for(let k = 0; k < 4; k++){ const a = r() * 6.28, d = R * (2.1 + r() * .6); one += `<circle cx="${f(x + Math.cos(a) * d)}" cy="${f(y + Math.sin(a) * d)}" r=".9" fill="url(#dome)"/>`; }
-  });
-  for(let i = -1; i <= 1; i++) for(let j = -1; j <= 1; j++) s += `<g transform="translate(${i * LT} ${j * LT})">${one}</g>`;
-  return (withNet ? `<path d="${net}" stroke="#8a8a8a" stroke-width=".32" fill="none" opacity=".55"/>` : "") + s;
-}
-
-/* ---------- a straight-cut card with gilded edges (PS×PS 9-slice, like paper.webp): the sheet, and a gold rim round it ---------- */
-const giltRect = `M${PEDGE + 4} ${PEDGE}H${PS - PEDGE - 4}Q${PS - PEDGE} ${PEDGE} ${PS - PEDGE} ${PEDGE + 4}V${PS - PEDGE - 4}Q${PS - PEDGE} ${PS - PEDGE} ${PS - PEDGE - 4} ${PS - PEDGE}H${PEDGE + 4}Q${PEDGE} ${PS - PEDGE} ${PEDGE} ${PS - PEDGE - 4}V${PEDGE + 4}Q${PEDGE} ${PEDGE} ${PEDGE + 4} ${PEDGE}Z`;
-
-/* ---------- the seal (on a 200-grid): cream wax with an uneven edge and a rounded lip, a pressed plate, a sprig standing up ---------- */
-function seal(){
-  const r = rng(19);
-  let edge = "";
-  for(let i = 0; i <= 160; i++){
-    const t = i / 160 * 6.2832, rr = 90 + 3.2 * Math.sin(5 * t + .6) + 2.2 * Math.sin(8 * t + 2.1) + 1.2 * Math.sin(13 * t + .9);
-    edge += (i ? "L" : "M") + f(100 + rr * Math.cos(t)) + " " + f(100 + rr * Math.sin(t));
-  }
-  let s = `<path d="${edge}Z" fill="url(#lip)"/><circle cx="100" cy="100" r="68" fill="#7e7e7e"/><circle cx="100" cy="100" r="61" fill="none" stroke="#b4b4b4" stroke-width="2.4"/>
-    <path d="M100 152C97 128 98 92 102 50" fill="none" stroke="#c8c8c8" stroke-width="3.2" stroke-linecap="round"/>`;
-  [[146, 26], [128, 24], [110, 21], [92, 18], [75, 15], [60, 12]].forEach(([y, L], i) => {
-    const x = 99 + (y < 90 ? 1.5 : 0);
-    s += leaf(r, x, y, -150 + i * 4, L, .06) + leaf(r, x, y, -30 - i * 4, L, -.06);
-  });
-  return s + leaf(r, 102, 52, -88, 13);
-}
-
-/* ---------- dried baby's breath: a stem branching four times, a cluster of tiny florets at every tip ---------- */
-function gypsophila(){
-  const r = rng(41);
+/* baby's breath: a stem branching five times, a cluster of tiny florets at every tip */
+function babysBreath(seed, florN, florS, len){
+  const r = rng(seed);
   let stems = "", florets = "";
   const floret = (x, y, s) => [...Array(5)].map((_, k) => { const a = k * 1.2566 + r(); return `<circle cx="${f(x + Math.cos(a) * s * .55)}" cy="${f(y + Math.sin(a) * s * .55)}" r="${f(s * .5)}" fill="url(#dome)"/>`; }).join("") + `<circle cx="${f(x)}" cy="${f(y)}" r="${f(s * .35)}" fill="#e0e0e0"/>`;
   function branch(x, y, ang, len, depth){
     const x2 = x + Math.cos(ang) * len, y2 = y + Math.sin(ang) * len;
     stems += `M${f(x)} ${f(y)}Q${f((x + x2) / 2 + (r() - .5) * 5)} ${f((y + y2) / 2)} ${f(x2)} ${f(y2)}`;
-    if(!depth){ for(let k = 0, n = 4 + Math.floor(r() * 4); k < n; k++){ const a = r() * 6.28, d = r() * 5; florets += floret(x2 + Math.cos(a) * d, y2 + Math.sin(a) * d, 2.3 + r() * 1.3); } return; }
+    if(!depth){ for(let k = 0, n = florN + Math.floor(r() * 4); k < n; k++){ const a = r() * 6.28, d = r() * 5.5; florets += floret(x2 + Math.cos(a) * d, y2 + Math.sin(a) * d, florS + r() * 1.3); } return; }
     for(let i = 0, n = 2 + Math.floor(r() * 2); i < n; i++) branch(x2, y2, ang + (r() - .5) * 1.2, len * (.66 + r() * .16), depth - 1);
   }
-  branch(100, 258, -Math.PI / 2 - .08, 56, 5);
+  branch(100, 258, -Math.PI / 2 - .08, len, 5);
   return { stems: `<path d="${stems}" fill="none" stroke="#a6a6a6" stroke-width="1.3" stroke-linecap="round"/>`, florets };
 }
 
-/* ---------- a scalloped ceramic dish (a raised rim, a shallow well) and two gold rings resting in it ---------- */
-function dish(){
-  let edge = "";
-  for(let i = 0; i <= 280; i++){ const t = i / 280 * 6.2832, rr = 100 + 4.2 * Math.cos(14 * t); edge += (i ? "L" : "M") + f(115 + rr * Math.cos(t)) + " " + f(115 + rr * Math.sin(t)); }
-  const ring = (cx, cy, R) => `<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#a2a2a2" stroke-width="5.2"/><circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#e6e6e6" stroke-width="1.8"/>`;
-  return {
-    clay: `<path d="${edge}Z" fill="url(#well)"/>`,
-    gold: ring(98, 108, 21) + ring(126, 124, 18.5),
-  };
+/* ---------- our monogram (on a 200-grid): F & R — the initials in Cinzel, a classic ampersand between them ---------- */
+const [I1, I2] = CONFIG.initials;
+const initials = ({ size, y, x1, x2, amp, ampY, fill, bold }) => `<g fill="${fill}" stroke="${fill}" stroke-width="${bold}" stroke-linejoin="round" text-anchor="middle">
+    <text x="${x1}" y="${y}" font-family="Cinzel" font-size="${size}">${I1}</text><text x="${x2}" y="${y}" font-family="Cinzel" font-size="${size}">${I2}</text>
+    <text x="${(x1 + x2) / 2}" y="${ampY}" font-family="Cormorant Garamond" font-size="${amp}" stroke-width="${bold / 2}">&amp;</text></g>`;
+
+/* half a laurel: a fine stem along the circle (radius R round the centre) from angle a0 to a1, teardrop leaves in pairs,
+   smaller toward the tip, one leaf at the end */
+function laurel(R, a0, a1, n, L, W){
+  const pt = a => [100 + R * Math.cos(a * Math.PI / 180), 100 + R * Math.sin(a * Math.PI / 180)], turn = a1 > a0 ? 90 : -90;
+  const [x0, y0] = pt(a0), [x1, y1] = pt(a1);
+  let s = `<path d="M${f(x0)} ${f(y0)}A${R} ${R} 0 0 ${a1 > a0 ? 1 : 0} ${f(x1)} ${f(y1)}" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/>`;
+  for(let i = 0; i < n; i++){
+    const t = i / n, a = a0 + (a1 - a0) * (t + .04), [x, y] = pt(a), l = L * (1 - t * .45), w = W * (1 - t * .35);
+    s += `<path d="${tear(x, y, a + turn - 34, 0, l, w)}" fill="#fff"/><path d="${tear(x, y, a + turn + 34, 0, l, w)}" fill="#fff"/>`;
+  }
+  return s + `<path d="${tear(x1, y1, a1 + turn, 0, L * .55, W * .6)}" fill="#fff"/>`;
 }
+
+/* the logo: F & R inside a laurel wreath, open at the top, a diamond at its crown and at its foot */
+function monogram(){
+  const gem = y => `<path d="M100 ${y - 5}l4 5-4 5-4-5Z" fill="#fff"/>`;
+  return laurel(85, 104, 252, 10, 15, 3.8) + laurel(85, 76, -72, 10, 15, 3.8) + gem(14) + gem(192)
+    + initials({ size: 72, y: 127, x1: 57, x2: 145, amp: 44, ampY: 117, fill: "#fff", bold: .7 });
+}
+
+/* ---------- the gold seal (on a 200-grid): wax with an uneven edge and a rounded lip, a pressed plate, the initials standing up ---------- */
+function seal(){
+  let edge = "";
+  for(let i = 0; i <= 160; i++){
+    const t = i / 160 * 6.2832, rr = 90 + 3.2 * Math.sin(5 * t + .6) + 2.2 * Math.sin(8 * t + 2.1) + 1.2 * Math.sin(13 * t + .9);
+    edge += (i ? "L" : "M") + f(100 + rr * Math.cos(t)) + " " + f(100 + rr * Math.sin(t));
+  }
+  return `<path d="${edge}Z" fill="url(#lip)"/><circle cx="100" cy="100" r="68" fill="#7e7e7e"/><circle cx="100" cy="100" r="61" fill="none" stroke="#b4b4b4" stroke-width="2.4"/>
+    ${initials({ size: 52, y: 119, x1: 69, x2: 133, amp: 32, ampY: 111, fill: "#c8c8c8", bold: 1.2 })}`;
+}
+
+/* ---------- an ivory surface in morning sun: warm light from the upper left, the soft shadows of leaves across it ---------- */
+const SW = 600, SH = 1100;
+function sunlit(w = SW, h = SH){
+  const r = rng(73);
+  let leaves = "";
+  for(let b = 0; b < 5; b++){
+    let x = w + 20 - r() * 120, y = -40 + b * h / 7 + r() * 80;
+    const ang = 2.35 + (r() - .5) * .5;
+    for(let i = 0; i < 18; i++){
+      x += Math.cos(ang) * 14; y += Math.sin(ang) * 14;
+      for(const side of [-1, 1]){ const a = ang * 57.3 + side * (45 + r() * 20), L = 22 + r() * 18; leaves += `<path d="${tear(x, y, a, 2, L, L * .24)}"/>`; }
+    }
+  }
+  return `<defs><filter id="lb" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4.2"/></filter>
+      <filter id="tooth"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .45  0 0 0 0 .4  0 0 0 0 .33  0 0 0 .05 0"/></filter>
+      <radialGradient id="sun" cx=".18" cy=".1" r="1"><stop offset="0" stop-color="#fffdf8"/><stop offset=".55" stop-color="#f4efe6"/><stop offset="1" stop-color="#e9e1d4"/></radialGradient></defs>
+    <rect width="${w}" height="${h}" fill="url(#sun)"/><rect width="${w}" height="${h}" filter="url(#tooth)"/>
+    <g fill="#5f6348" opacity=".17" filter="url(#lb)">${leaves}</g>`;
+}
+/* sage chiffon gathered in the lower left corner: soft folds, its edge melting away */
+function drape(){
+  const r = rng(29);
+  let folds = "";
+  for(let i = 0; i < 9; i++){
+    const x0 = -60 + i * 34 + r() * 14, k = [r(), r(), r()];
+    folds += `<path d="M${f(x0)} ${360 + r() * 40}C${f(x0 + 40 + k[0] * 50)} ${f(250 + k[1] * 40)} ${f(x0 + 120 + k[2] * 60)} ${f(170 + k[0] * 40)} ${f(x0 + 260 + k[1] * 60)} -20" fill="none" stroke="${i % 2 ? "#f0f1e6" : "#8c9378"}" stroke-opacity="${f(.45 + r() * .4)}" stroke-width="${f(10 + r() * 26)}"/>`;
+  }
+  return `<defs><filter id="db" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>
+      <radialGradient id="fade" cx="0" cy="1" r="1"><stop offset=".3" stop-color="#fff"/><stop offset=".62" stop-color="#fff" stop-opacity=".6"/><stop offset=".92" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <mask id="dm" maskUnits="userSpaceOnUse" x="0" y="0" width="360" height="360"><rect width="360" height="360" fill="url(#fade)"/></mask></defs>
+    <g mask="url(#dm)"><rect width="360" height="360" fill="#b4ba9f"/><g filter="url(#db)">${folds}</g></g>`;
+}
+
+/* ---------- a square ivory envelope from the back (EW×EH) ----------
+   The back: side flaps meeting a bottom flap, and above the side flaps' edges the inside of the envelope, seen once the
+   top flap is up. The top flap is its own picture, so it can turn. */
+const EW = 320, EH = 304, TIP = EH * .6;
+const flapPath = `M0 0H${EW}L${EW / 2 + 12} ${EH * .56}Q${EW / 2} ${TIP} ${EW / 2 - 12} ${EH * .56}Z`;
+const envBackShade = `<defs>
+    <linearGradient id="inside" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f3f2e" stop-opacity=".24"/><stop offset="1" stop-color="#4f3f2e" stop-opacity=".1"/></linearGradient>
+    <linearGradient id="sl" x1="0" x2="1"><stop offset="0" stop-color="#7a6248" stop-opacity="0"/><stop offset="1" stop-color="#7a6248" stop-opacity=".08"/></linearGradient>
+    <linearGradient id="sr" x1="1" x2="0"><stop offset="0" stop-color="#7a6248" stop-opacity="0"/><stop offset="1" stop-color="#7a6248" stop-opacity=".1"/></linearGradient></defs>
+  <path d="M0 0H${EW}L${EW / 2} ${EH * .55}Z" fill="#efe7da"/><path d="M0 0H${EW}L${EW / 2} ${EH * .55}Z" fill="url(#inside)"/>
+  <path d="M0 0L${EW / 2} ${EH * .55}L0 ${EH}Z" fill="url(#sl)"/><path d="M${EW} 0L${EW / 2} ${EH * .55}L${EW} ${EH}Z" fill="url(#sr)"/>
+  <path d="M0 ${EH}L${EW / 2} ${EH * .47}L${EW} ${EH}Z" fill="#7a6248" fill-opacity=".04"/>`;
+const envBackRelief = `<rect width="${EW}" height="${EH}" fill="#6e6e6e"/><path d="M0 0H${EW}L${EW / 2} ${EH * .55}Z" fill="#5a5a5a"/>
+  <path d="M0 ${EH}L${EW / 2} ${EH * .47}L${EW} ${EH}Z" fill="#848484"/>
+  <path d="M0 0L${EW / 2} ${EH * .55}L0 ${EH}Z" fill="#7a7a7a"/><path d="M${EW} 0L${EW / 2} ${EH * .55}L${EW} ${EH}Z" fill="#7a7a7a"/>`;
+/* the flap's inside, seen once it has turned up: drawn upside down, since the flap shows it turned over */
+const flapInside = `<defs><linearGradient id="fi" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#f1eadf"/><stop offset="1" stop-color="#e3d9c9"/></linearGradient></defs>
+  <path d="M0 200H${EW}L${EW / 2 + 12} ${f(200 - EH * .56)}Q${EW / 2} ${f(200 - TIP)} ${EW / 2 - 12} ${f(200 - EH * .56)}Z" fill="url(#fi)"/>`;
+const flapArt = `<defs><linearGradient id="tf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf8"/><stop offset="1" stop-color="#f3ede2"/></linearGradient>
+    <filter id="fs" x="-10%" y="-10%" width="120%" height="140%"><feGaussianBlur stdDeviation="3.4"/></filter></defs>
+  <path d="${flapPath}" fill="#4a3a2a" fill-opacity=".24" filter="url(#fs)" transform="translate(0 5)"/>
+  <path d="${flapPath}" fill="url(#tf)"/><path d="${flapPath}" fill="none" stroke="#c8bba8" stroke-width=".8"/>`;
 
 /* ---------- lighting ---------- */
 const sun = `<feDistantLight azimuth="225" elevation="50"/>`;   // from the top left
 const DEFS = `
   <radialGradient id="dome" cx=".42" cy=".4" r=".62"><stop offset="0" stop-color="#d8d8d8"/><stop offset=".72" stop-color="#ababab"/><stop offset="1" stop-color="#8a8a8a"/></radialGradient>
   <linearGradient id="ridge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a7a7a"/><stop offset=".5" stop-color="#c4c4c4"/><stop offset="1" stop-color="#7a7a7a"/></linearGradient>
-  <radialGradient id="lip"><stop offset="0" stop-color="#b0b0b0"/><stop offset=".76" stop-color="#b4b4b4"/><stop offset=".88" stop-color="#d6d6d6"/><stop offset="1" stop-color="#909090"/></radialGradient>
-  ${SOFTEN}
-  <radialGradient id="well"><stop offset="0" stop-color="#8e8e8e"/><stop offset=".7" stop-color="#999"/><stop offset=".82" stop-color="#d4d4d4"/><stop offset=".9" stop-color="#c8c8c8"/><stop offset="1" stop-color="#9c9c9c"/></radialGradient>`;
+  <radialGradient id="lip"><stop offset="0" stop-color="#b0b0b0"/><stop offset=".76" stop-color="#b4b4b4"/><stop offset=".88" stop-color="#d6d6d6"/><stop offset="1" stop-color="#909090"/></radialGradient>`;
 let BOX = "";     // set per picture by render(): the filter covers the whole (padded) picture
 let GRAIN = "";   // set per picture by render(): the noise has to be as fine as the pixels being drawn
 const grainAt = density => `<feTurbulence type="fractalNoise" baseFrequency="${(.55 * density).toFixed(2)}" numOctaves="1" seed="3"/><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  .01 0 0 0 0" result="grain"/>`;
 const KD = .5 / Math.sin(50 * Math.PI / 180);   // flat paper lights to exactly mid-grey…
 
 /* a material of one colour, lit, cut to its own outline, casting a soft shadow on whatever lies beneath */
-const material = (color, { kd = 1.2, spec = .2, exp = 30, relief = 4.5, blur = 1, shadow = .25, sx = 1.4, sy = 2.4, sb = 2, ink = "#4a3c30" } = {}) => id => `<filter id="${id}" ${BOX}>
+const material = (color, { kd = 1.2, spec = .2, exp = 30, relief = 4.5, blur = 1, shadow = .25, sx = 1.4, sy = 2.4, sb = 2 } = {}) => id => `<filter id="${id}" ${BOX}>
     <feColorMatrix in="SourceGraphic" type="luminanceToAlpha"/>
     <feGaussianBlur stdDeviation="${blur}" result="height"/>
     <feDiffuseLighting in="height" surfaceScale="${relief}" diffuseConstant="${kd}" lighting-color="${color}" result="matte">${sun}</feDiffuseLighting>
@@ -242,23 +193,11 @@ const material = (color, { kd = 1.2, spec = .2, exp = 30, relief = 4.5, blur = 1
     <feComposite in="matte" in2="shine" operator="arithmetic" k2="1" k3="1" result="lit"/>
     <feComposite in="lit" in2="SourceAlpha" operator="in" result="cut"/>
     <feGaussianBlur in="SourceAlpha" stdDeviation="${sb}"/><feOffset dx="${sx}" dy="${sy}" result="cast"/>
-    <feFlood flood-color="${ink}" flood-opacity="${shadow}"/><feComposite in2="cast" operator="in" result="shade"/>
+    <feFlood flood-color="#4a3c30" flood-opacity="${shadow}"/><feComposite in2="cast" operator="in" result="shade"/>
     <feMerge><feMergeNode in="shade"/><feMergeNode in="cut"/></feMerge>
   </filter>`;
 const LIGHT = {
-  // cotton paper: the sheet in one colour, a faint shade along its torn edge, and the shadow it lays on the satin
-  sheet: id => `<filter id="${id}" ${BOX}>
-    <feFlood flood-color="${PAPER}" result="c"/><feComposite in="c" in2="SourceAlpha" operator="in" result="sheet"/>
-    <feMorphology in="SourceAlpha" operator="erode" radius="1.3" result="er"/>
-    <feComposite in="SourceAlpha" in2="er" operator="out" result="rim0"/><feGaussianBlur in="rim0" stdDeviation=".7" result="rim1"/>
-    <feFlood flood-color="#c9bba8" flood-opacity=".32"/><feComposite in2="rim1" operator="in" result="rim"/>
-    <feGaussianBlur in="SourceAlpha" stdDeviation="4"/><feOffset dy="4" result="far"/>
-    <feFlood flood-color="#5d4c3b" flood-opacity=".2"/><feComposite in2="far" operator="in" result="farS"/>
-    <feGaussianBlur in="SourceAlpha" stdDeviation="1"/><feOffset dy="1" result="near"/>
-    <feFlood flood-color="#5d4c3b" flood-opacity=".16"/><feComposite in2="near" operator="in" result="nearS"/>
-    <feMerge><feMergeNode in="farS"/><feMergeNode in="nearS"/><feMergeNode in="sheet"/><feMergeNode in="rim"/></feMerge>
-  </filter>`,
-  // only what rises or falls shows, on a transparent ground: light above mid-grey, shade below it (blind embossing)
+  // only what rises or falls shows, on a transparent ground: light above mid-grey, shade below it (the envelope's folds)
   pressed: id => `<filter id="${id}" ${BOX}>
     <feColorMatrix in="SourceGraphic" type="luminanceToAlpha"/>
     <feGaussianBlur stdDeviation=".9" result="height"/>
@@ -267,42 +206,41 @@ const LIGHT = {
     <feColorMatrix in="lit" type="matrix" values="0 0 0 0 .32  0 0 0 0 .26  0 0 0 0 .2  -1.5 0 0 0 .73" result="sh"/>
     <feMerge><feMergeNode in="sh"/><feMergeNode in="hi"/></feMerge>
   </filter>`,
-  thread: material("#f7f2e9", { kd: 1.27, spec: .12, relief: 2.6, blur: .55, shadow: .32, sx: .7, sy: 1.2, sb: .9 }),   // ivory lace
-  dry: material("#d9c9ab", { kd: 1.18, spec: .08, relief: 3, shadow: .18 }),                                           // dried stems
-  bloom: material("#f4ecdf", { kd: 1.25, spec: .15, relief: 3, shadow: .16 }),                                         // dried florets
-  clay: material("#e7ddcf", { kd: 1.14, spec: .32, exp: 22, relief: 6, shadow: .3, sx: 3, sy: 6, sb: 5 }),           // ceramic
-  gold: material("#cf9f52", { kd: 1.15, spec: 1, exp: 34, relief: 5, blur: .8, shadow: .35, sx: 1.2, sy: 2, sb: 1.4 }),
-  // silk: a soft ivory sheen that rises to bright satin highlights along each fold
-  silk: id => `<filter id="${id}" ${BOX}>
-    <feColorMatrix in="SourceGraphic" type="luminanceToAlpha"/>
-    <feGaussianBlur stdDeviation="2" result="height"/>
-    <feDiffuseLighting in="height" surfaceScale="38" diffuseConstant="1.02" lighting-color="#efe7da" result="matte"><feDistantLight azimuth="235" elevation="58"/></feDiffuseLighting>
-    <feSpecularLighting in="height" surfaceScale="38" specularConstant=".55" specularExponent="9" lighting-color="#fffaf2" result="shine"><feDistantLight azimuth="235" elevation="58"/></feSpecularLighting>
-    <feComposite in="matte" in2="shine" operator="arithmetic" k2="1" k3="1"/>
+  // the envelope's paper: one colour, with the soft shadow it lays down
+  envsheet: id => `<filter id="${id}" ${BOX}>
+    <feFlood flood-color="#f4efe6" result="c"/><feComposite in="c" in2="SourceAlpha" operator="in" result="sheet"/>
+    <feGaussianBlur in="SourceAlpha" stdDeviation="5"/><feOffset dx="2" dy="7" result="far"/>
+    <feFlood flood-color="#5d4c3b" flood-opacity=".22"/><feComposite in2="far" operator="in" result="farS"/>
+    <feGaussianBlur in="SourceAlpha" stdDeviation="1"/><feOffset dy="1" result="near"/>
+    <feFlood flood-color="#5d4c3b" flood-opacity=".18"/><feComposite in2="near" operator="in" result="nearS"/>
+    <feMerge><feMergeNode in="farS"/><feMergeNode in="nearS"/><feMergeNode in="sheet"/></feMerge>
   </filter>`,
-  foil: material("#c9a25a", { kd: 1.12, spec: .9, exp: 24, relief: 1.4, blur: .45, shadow: .12, sx: .4, sy: .6, sb: .5 }),   // flat hot-foil print
-  // cream sealing wax, cut to its outline; what stands higher is a touch paler, so the lip and the sprig read
-  wax: id => `<filter id="${id}" ${BOX}>
+  // gold sealing wax, satin-bright where it rises
+  goldwax: id => `<filter id="${id}" ${BOX}>
     <feColorMatrix in="SourceGraphic" type="luminanceToAlpha"/>
     <feGaussianBlur stdDeviation="1" result="shape"/>
     ${GRAIN}
     <feComposite in="shape" in2="grain" operator="arithmetic" k2="1" k3="1" result="height"/>
-    <feDiffuseLighting in="height" surfaceScale="7" diffuseConstant="1.12" lighting-color="#ecdfc8" result="matte">${sun}</feDiffuseLighting>
-    <feSpecularLighting in="height" surfaceScale="7" specularConstant=".4" specularExponent="20" lighting-color="#fffaf0" result="shine">${sun}</feSpecularLighting>
+    <feDiffuseLighting in="height" surfaceScale="7" diffuseConstant="1.12" lighting-color="#c39a55" result="matte">${sun}</feDiffuseLighting>
+    <feSpecularLighting in="height" surfaceScale="7" specularConstant=".75" specularExponent="28" lighting-color="#fff1cc" result="shine">${sun}</feSpecularLighting>
     <feComposite in="matte" in2="shine" operator="arithmetic" k2="1" k3="1" result="lit"/>
-    <feColorMatrix in="shape" type="matrix" values="0 0 0 0 1  0 0 0 0 .98  0 0 0 0 .93  0 0 0 1.5 -.74" result="pale"/>
+    <feColorMatrix in="shape" type="matrix" values="0 0 0 0 .93  0 0 0 0 .8  0 0 0 0 .56  0 0 0 1.2 -.72" result="pale"/>
     <feMerge result="toned"><feMergeNode in="lit"/><feMergeNode in="pale"/></feMerge>
     <feComposite in="toned" in2="SourceAlpha" operator="in"/>
   </filter>`,
+  olive: material("#8e9a6c", { kd: 1.15, spec: .18, relief: 4, shadow: .22 }),
+  greenstem: material("#9ca783", { kd: 1.15, spec: .08, relief: 3, shadow: .15 }),
+  white: material("#fffdf9", { kd: 1.3, spec: .12, relief: 3, shadow: .2 }),
+  // gold foil pressed into the paper: a low, bright relief with almost no shadow
+  goldfoil: material("#86622a", { kd: 1.1, spec: .6, exp: 16, relief: 1.6, blur: .5, shadow: .14, sx: .4, sy: .8, sb: .8 }),
 };
 const NEEDS_GROUND = new Set(["pressed"]);   // lights the whole sheet, so it starts as flat black (height 0)
 
-/* layers: [light, art] pairs, bottom first; art is drawn on a W×H grid and the picture comes out `scale` times that.
-   It is lit at twice that size and reduced, which smooths every edge.
-   pad: room drawn round the picture and cut off afterwards, so tiles have no lit seams at their edges.
-   png: also keep a PNG copy in assets/ (next/og, which draws the share card, reads PNG). */
+/* layers: [light, art] pairs, bottom first ("plain" = drawn as it is, unlit); art is drawn on a W×H grid and the picture
+   comes out `scale` times that. It is lit at twice that size and reduced, which smooths every edge.
+   pad: room drawn round the picture and cut off afterwards.  png: also keep a PNG copy in assets/, `pngW` wide. */
 const SUPER = 2, ONLY = process.argv[2];
-async function render(file, W, H, layers, { scale = 3, quality = 88, alphaQuality = 92, pad = 0, png = "" } = {}){
+async function render(file, W, H, layers, { scale = 3, quality = 88, alphaQuality = 92, pad = 0, png = "", pngW = W * 1.5 } = {}){
   if(ONLY && !file.includes(ONLY)) return;
   const [px, py] = Array.isArray(pad) ? pad : [pad, pad], VW = W + 2 * px, VH = H + 2 * py;
   GRAIN = grainAt(scale * SUPER);
@@ -316,46 +254,28 @@ async function render(file, W, H, layers, { scale = 3, quality = 88, alphaQualit
   const buf = await img.png().toBuffer();
   const info = await sharp(buf).webp({ quality, alphaQuality, effort: 6, smartSubsample: true }).toFile(join(root, "public", file));
   console.log(`public/${file}`.padEnd(38), `${info.width}×${info.height}`.padEnd(11), `${Math.round(info.size / 1024)} KB`);
-  if(png) await sharp(buf).resize(Math.round(W * 1.5)).png().toFile(join(root, "assets", png));
+  if(png) await sharp(buf).resize(Math.round(pngW)).png().toFile(join(root, "assets", png));
   return buf;
 }
 
 /* ---------- the pieces (sizes are CSS px on a phone) ---------- */
 mkdirSync(join(root, "public/emboss"), { recursive: true });
 
+await render("emboss/sunlit.webp", SW, SH, [["plain", sunlit()]], { scale: 1.2, quality: 84 });
+await render("emboss/drape.webp", 360, 360, [["plain", drape()]], { scale: 1.6, quality: 86 });
+await render("emboss/env-back.webp", EW, EH, [["envsheet", `<rect width="${EW}" height="${EH}" rx="2" fill="#fff"/>`], ["plain", envBackShade], ["pressed", envBackRelief]], { scale: 2.4, quality: 90, pad: 18 });
+await render("emboss/env-flap.webp", EW, 200, [["plain", flapArt]], { scale: 2.4, quality: 90, alphaQuality: 95 });
+await render("emboss/env-flap-in.webp", EW, 200, [["plain", flapInside]], { scale: 2.4, quality: 88, alphaQuality: 95 });
 {
-  const edge = deckle();
-  await render("emboss/paper.webp", PS, PS, [["sheet", `<path d="${edge}" fill="#fff"/>`]], { scale: 2, quality: 92, alphaQuality: 95 });
-  // the same sheet with its torn edge painted gold, as fine stationers do
-  await render("emboss/paper-gilt.webp", PS, PS, [["sheet", `<path d="${edge}" fill="#fff"/>`], ["foil", `<path d="${edge}" fill="none" stroke="#d0d0d0" stroke-width="2.2"/>`]], { scale: 2, quality: 92, alphaQuality: 95 });
+  const g = babysBreath(57, 6, 2.6, 52);
+  await render("emboss/babysbreath.webp", 200, 260, [["greenstem", g.stems], ["white", g.florets]], { scale: 2.5, quality: 90, pad: 6, png: "babysbreath.png", pngW: 300 });
+  await render("emboss/olive.webp", 120, 220, [["olive", sprig(rng(33), 22, 214, 92, 14, 30, 7)]], { scale: 2.5, quality: 90, pad: 10, png: "olive.png", pngW: 180 });
 }
-await render("emboss/silk.webp", SW, SH, [["plain", silk()]], { scale: 1.2, quality: 84 });
-{
-  const o = ogFrame();
-  await render("emboss/og-frame.webp", 1200, 630, [["plain", o.paper], ["foil", o.rim]], { scale: 1, quality: 90, png: "og-frame.png" });
-}
-await render("emboss/card-gilt.webp", PS, PS, [["sheet", `<path d="${giltRect}" fill="#fff"/>`], ["gold", `<path d="${giltRect}" fill="none" stroke="#c4c4c4" stroke-width="2.4"/><path d="${giltRect}" fill="none" stroke="#e8e8e8" stroke-width=".8"/>`]], { scale: 2, quality: 92, alphaQuality: 95 });
-await render("emboss/doily.webp", DS, DS, [["thread", doily()]], { scale: 3, quality: 90, alphaQuality: 95, pad: 6 });
-await render("emboss/liner.webp", LT, LT, [["thread", liner()]], { scale: 3, quality: 88, alphaQuality: 92, pad: 12 });
-await render("emboss/liner-gold.webp", LT, LT, [["gold", liner(false)]], { scale: 3, quality: 88, alphaQuality: 92, pad: 12 });
-await render("emboss/flap-sprig.webp", 110, 150, [["pressed", sprig(rng(7), 18, 144, 88, 12, 15, 7)]], { scale: 3, quality: 88, pad: 8 });
-await render("emboss/seal.webp", 200, 200, [["wax", seal()]], { scale: 3, quality: 95, alphaQuality: 100, png: "seal.png" });
-{
-  const g = gypsophila();
-  await render("emboss/gypsophila.webp", 200, 260, [["dry", g.stems], ["bloom", g.florets]], { scale: 2.5, quality: 90, pad: 6, png: "gypsophila.png" });
-}
-{
-  const d = dish();
-  await render("emboss/dish.webp", 230, 230, [["clay", d.clay], ["gold", d.gold]], { scale: 2.5, quality: 90, pad: 8, png: "dish.png" });
-}
-
-// favicon.ico (16, 32, 48): the monogram, F | R, on paper
-if(!ONLY || "favicon".includes(ONLY)){
-  const [a, b] = CONFIG.initials;
-  const svg = s => Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 64 64"><rect width="64" height="64" rx="10" fill="${PAPER}"/>
-    <g font-family="Cormorant Garamond" font-weight="500" font-size="34" fill="#4f453e" text-anchor="middle"><text x="19" y="44">${a}</text><text x="46" y="44">${b}</text></g>
-    <path d="M32.5 14V50" stroke="#a39684" stroke-width="1.6"/></svg>`);
-  const sizes = [16, 32, 48], pngs = await Promise.all(sizes.map(s => sharp(svg(s), { density: 72 * 4 }).resize(s, s).png().toBuffer()));
+await render("emboss/monogram.webp", 200, 200, [["goldfoil", monogram()]], { scale: 1.6, quality: 92, alphaQuality: 100, pad: 4 });
+// the seal, and from it favicon.ico (16, 32, 48)
+const sealPng = await render("emboss/seal-gold.webp", 200, 200, [["goldwax", seal()]], { scale: 3, quality: 95, alphaQuality: 100, png: "seal-gold.png", pngW: 300 });
+if(sealPng){
+  const sizes = [16, 32, 48], pngs = await Promise.all(sizes.map(s => sharp(sealPng).resize(s, s).png().toBuffer()));
   const head = Buffer.alloc(6 + 16 * sizes.length);
   head.writeUInt16LE(0, 0); head.writeUInt16LE(1, 2); head.writeUInt16LE(sizes.length, 4);
   let offset = head.length;
