@@ -28,8 +28,8 @@ Add the guest's name to the end of the link, with hyphens for spaces:
 ### Make links the easy way: `/admin`
 
 Open `/admin` (e.g. http://localhost:3000/admin, or yoursite.com/admin), type the guest's name — `raish momin` becomes
-`/Raish-Momin`, `& Family` becomes `-and-Family` — and press **Copy link** to paste it into WhatsApp, or **Open** to see
-their invitation. It also shows exactly how the invitation will greet them.
+`/Raish-Momin`, `& Family` becomes `-and-Family` — and press **Share** to send it (the phone's share sheet, or WhatsApp), **Copy link** to paste it
+anywhere, or **Open** to see their invitation. It also shows exactly how the invitation will greet them.
 
 ## Where things are
 
